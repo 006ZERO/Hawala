@@ -185,6 +185,8 @@ export default function Home() {
   const [language, setLanguage] = useState<Language>("EN");
   const [showTransfer, setShowTransfer] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationsRead, setNotificationsRead] = useState(false);
   const [showStr, setShowStr] = useState(false);
   const [strSubmitted, setStrSubmitted] = useState(false);
   const [showCustomer, setShowCustomer] = useState(false);
@@ -453,9 +455,16 @@ export default function Home() {
               <option value="UR">اردو</option>
               <option value="TL">Tagalog</option>
             </select>
-            <button className="notification" aria-label="Notifications">
-              ♢<span />
+            <button className="notification" aria-label="Notifications" aria-expanded={showNotifications} onClick={() => setShowNotifications((current) => !current)}>
+              ♢{!notificationsRead && <span />}
             </button>
+            {showNotifications && <aside className="notification-center" aria-label="Notification center">
+              <div className="notification-head"><div><strong>Notifications</strong><small>{notificationsRead ? "All caught up" : "3 items need attention"}</small></div><button onClick={() => setNotificationsRead(true)}>Mark all read</button></div>
+              <button onClick={() => { setActive("Compliance"); setShowNotifications(false); }}><span className="notice-icon urgent">!</span><p><strong>High-risk case awaiting review</strong><small>HW-28490 · Risk score 82 · 11 minutes ago</small></p><em>Review</em></button>
+              <button onClick={() => { setActive("Customers"); setShowNotifications(false); }}><span className="notice-icon warning">◎</span><p><strong>Customer document expiring</strong><small>C-1842 · Residence permit expires in 6 days</small></p><em>Open</em></button>
+              <button onClick={() => { setActive("Brokers"); setShowNotifications(false); }}><span className="notice-icon info">⇄</span><p><strong>Settlement cycle is ready</strong><small>4 broker positions passed validation</small></p><em>Settle</em></button>
+              <div className="notification-foot">Alert routing · Policy v3.4</div>
+            </aside>}
           </div>
         </header>
 
