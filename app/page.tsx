@@ -97,12 +97,12 @@ const seededTransactions: Transaction[] = [
   },
 ];
 
-const nav = ["Overview", "Transactions", "Brokers", "Customers", "Compliance", "Reports"];
+const nav = ["Overview", "Transactions", "Brokers", "Customers", "Compliance", "Reports", "Regulator"];
 
 const translations = {
   EN: {
     search: "Search people or transactions", settings: "Settings", officer: "Compliance officer",
-    nav: { Overview: "Overview", Transactions: "Transactions", Brokers: "Brokers", Customers: "Customers", Compliance: "Compliance", Reports: "Reports" },
+    nav: { Overview: "Overview", Transactions: "Transactions", Brokers: "Brokers", Customers: "Customers", Compliance: "Compliance", Reports: "Reports", Regulator: "Regulator" },
     welcome: {
       Overview: ["WEDNESDAY, 29 JULY", "Good morning, Yousef.", "Here’s what needs your attention across your network."],
       Transactions: ["SECURE TRANSFER LEDGER", "Transactions", "Search, filter, and review every recorded transfer."],
@@ -110,12 +110,13 @@ const translations = {
       Customers: ["CUSTOMER DUE DILIGENCE", "Customer records", "Onboard customers and monitor identity-verification status."],
       Compliance: ["AML CASE MANAGEMENT", "Compliance review", "Investigate alerts, document reasoning, and record accountable decisions."],
       Reports: ["REGULATORY INTELLIGENCE", "Reporting center", "Monitor remittance exposure and prepare regulator-ready evidence."],
+      Regulator: ["SUPERVISORY PORTAL", "Central bank oversight", "Monitor formalized remittance flows without exposing customer identity."],
       Settings: ["PLATFORM ADMINISTRATION", "Compliance settings", "Configure screening policy, access controls, and regulatory integrations."],
     },
   },
   AR: {
     search: "ابحث عن أشخاص أو معاملات", settings: "الإعدادات", officer: "مسؤول الامتثال",
-    nav: { Overview: "نظرة عامة", Transactions: "المعاملات", Brokers: "الوكلاء", Customers: "العملاء", Compliance: "الامتثال", Reports: "التقارير" },
+    nav: { Overview: "نظرة عامة", Transactions: "المعاملات", Brokers: "الوكلاء", Customers: "العملاء", Compliance: "الامتثال", Reports: "التقارير", Regulator: "الجهة الرقابية" },
     welcome: {
       Overview: ["الأربعاء، 29 يوليو", "صباح الخير، يوسف.", "إليك ما يحتاج إلى اهتمامك عبر الشبكة."],
       Transactions: ["سجل التحويلات الآمن", "المعاملات", "ابحث وصفِّ وراجع كل تحويل مسجل."],
@@ -123,12 +124,13 @@ const translations = {
       Customers: ["العناية الواجبة بالعملاء", "سجلات العملاء", "سجّل العملاء وتابع حالة التحقق من الهوية."],
       Compliance: ["إدارة حالات مكافحة غسل الأموال", "مراجعة الامتثال", "حقق في التنبيهات ووثّق القرارات المسؤولة."],
       Reports: ["المعلومات الرقابية", "مركز التقارير", "راقب التحويلات وجهّز الأدلة الرقابية."],
+      Regulator: ["البوابة الإشرافية", "رقابة البنك المركزي", "راقب تدفقات التحويلات الرسمية دون كشف هوية العملاء."],
       Settings: ["إدارة المنصة", "إعدادات الامتثال", "اضبط سياسات الفحص والصلاحيات والتكامل الرقابي."],
     },
   },
   UR: {
     search: "افراد یا لین دین تلاش کریں", settings: "ترتیبات", officer: "کمپلائنس افسر",
-    nav: { Overview: "جائزہ", Transactions: "لین دین", Brokers: "بروکرز", Customers: "صارفین", Compliance: "تعمیل", Reports: "رپورٹس" },
+    nav: { Overview: "جائزہ", Transactions: "لین دین", Brokers: "بروکرز", Customers: "صارفین", Compliance: "تعمیل", Reports: "رپورٹس", Regulator: "نگران ادارہ" },
     welcome: {
       Overview: ["بدھ، 29 جولائی", "صبح بخیر، یوسف۔", "آپ کے نیٹ ورک میں توجہ طلب امور یہاں ہیں۔"],
       Transactions: ["محفوظ ترسیلی لیجر", "لین دین", "ہر درج شدہ ترسیل تلاش، فلٹر اور جانچیں۔"],
@@ -136,12 +138,13 @@ const translations = {
       Customers: ["صارف کی مکمل جانچ", "صارف ریکارڈز", "صارفین شامل کریں اور شناختی تصدیق دیکھیں۔"],
       Compliance: ["اے ایم ایل کیس مینجمنٹ", "تعمیل کا جائزہ", "الرٹس کی تحقیق اور فیصلوں کی دستاویز بندی کریں۔"],
       Reports: ["ریگولیٹری انٹیلیجنس", "رپورٹنگ سینٹر", "ترسیلات کی نگرانی اور ریگولیٹری ثبوت تیار کریں۔"],
+      Regulator: ["نگرانی پورٹل", "مرکزی بینک نگرانی", "صارف کی شناخت ظاہر کیے بغیر ترسیلات کی نگرانی کریں۔"],
       Settings: ["پلیٹ فارم انتظام", "تعمیل کی ترتیبات", "اسکریننگ، رسائی اور ریگولیٹری رابطے ترتیب دیں۔"],
     },
   },
   TL: {
     search: "Maghanap ng tao o transaksyon", settings: "Mga setting", officer: "Opisyal ng compliance",
-    nav: { Overview: "Pangkalahatan", Transactions: "Mga transaksyon", Brokers: "Mga broker", Customers: "Mga customer", Compliance: "Compliance", Reports: "Mga ulat" },
+    nav: { Overview: "Pangkalahatan", Transactions: "Mga transaksyon", Brokers: "Mga broker", Customers: "Mga customer", Compliance: "Compliance", Reports: "Mga ulat", Regulator: "Regulator" },
     welcome: {
       Overview: ["MIYERKULES, HULYO 29", "Magandang umaga, Yousef.", "Narito ang mga kailangang tutukan sa iyong network."],
       Transactions: ["LIGTAS NA TRANSFER LEDGER", "Mga transaksyon", "Hanapin, salain, at suriin ang bawat transfer."],
@@ -149,6 +152,7 @@ const translations = {
       Customers: ["PAGSUSURI NG CUSTOMER", "Mga rekord ng customer", "Mag-onboard at subaybayan ang identity verification."],
       Compliance: ["PAMAMAHALA NG AML CASE", "Pagsusuri sa compliance", "Imbestigahan ang alert at idokumento ang desisyon."],
       Reports: ["REGULATORY INTELLIGENCE", "Sentro ng pag-uulat", "Subaybayan ang remittance at ihanda ang ebidensya."],
+      Regulator: ["SUPERVISORY PORTAL", "Pangangasiwa ng central bank", "Subaybayan ang pormal na remittance nang walang personal na identidad."],
       Settings: ["PANGANGASIWA NG PLATFORM", "Mga setting ng compliance", "I-configure ang screening, access, at integrations."],
     },
   },
@@ -408,7 +412,7 @@ export default function Home() {
               onClick={() => setActive(item)}
             >
               <span className="nav-icon" aria-hidden="true">
-                {["⌂", "⇄", "◉", "◎", "◇", "▤"][index]}
+                {["⌂", "⇄", "◉", "◎", "◇", "▤", "◈"][index]}
               </span>
               {ui.nav[item as keyof typeof ui.nav]}
               {item === "Compliance" && <em>3</em>}
@@ -478,7 +482,7 @@ export default function Home() {
               <h1>{localizedWelcome[1]}</h1>
               <p>{localizedWelcome[2]}</p>
             </div>
-            {active !== "Compliance" && active !== "Brokers" && active !== "Settings" && <button className="primary" onClick={() => active === "Reports" ? exportRegulatoryCsv() : active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
+            {active !== "Compliance" && active !== "Brokers" && active !== "Settings" && active !== "Regulator" && <button className="primary" onClick={() => active === "Reports" ? exportRegulatoryCsv() : active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
               <span>{active === "Reports" ? "↓" : "＋"}</span> {active === "Reports" ? "Export CSV" : active === "Customers" ? "Add customer" : "New transfer"}
             </button>}
           </div>
@@ -667,6 +671,40 @@ export default function Home() {
                   </> : <div className="empty">Select a case to begin the review.</div>}
                 </article>
               </div>
+            </section>
+          ) : active === "Regulator" ? (
+            <section className="regulator-workspace">
+              <div className="supervisory-banner"><span className="shield">✓</span><div><strong>Privacy-preserving supervisory access</strong><p>Aggregate corridor and compliance data only. Customer names, identity documents, and broker credentials remain restricted.</p></div><em>Central Bank view</em></div>
+              <div className="regulator-metrics">
+                <article><span>Formalized volume</span><strong>JOD {reportVolume.toLocaleString("en-US")}</strong><small>Previously informal flows now visible</small></article>
+                <article><span>Registered entities</span><strong>{brokers.length}</strong><small>{brokers.filter((broker) => broker.status === "Active").length} active reporting entities</small></article>
+                <article><span>Monitored corridors</span><strong>{corridorSummary.length}</strong><small>Cross-border routes reporting live</small></article>
+                <article><span>STR pipeline</span><strong>{cases.filter((item) => item.status === "Escalated").length}</strong><small>Regulatory filings received or pending</small></article>
+              </div>
+              <div className="supervisory-grid">
+                <article className="panel flow-monitor">
+                  <div className="panel-heading"><div><h2>Cross-border flow monitor</h2><p>Aggregate declared remittance activity by corridor</p></div><span className="connection-live">● Live reporting</span></div>
+                  <div className="flow-map">
+                    <div className="origin-node"><span>JO</span><strong>Jordan</strong><small>Origin market</small></div>
+                    <div className="flow-lines">
+                      {corridorSummary.map((item) => <div key={item.corridor}><i style={{ width: `${Math.max(18, reportVolume ? item.volume / reportVolume * 100 : 18)}%` }} /><span>{item.corridor.replace("Jordan → ", "")}</span><strong>JOD {item.volume.toLocaleString("en-US")}</strong></div>)}
+                    </div>
+                  </div>
+                </article>
+                <article className="panel supervisory-alerts">
+                  <div className="panel-heading"><div><h2>Supervisory signals</h2><p>System-level issues requiring attention</p></div></div>
+                  <div><span className="signal-icon red">!</span><p><strong>{transactions.filter((item) => item.risk === "High").length} high-risk transfer signals</strong><small>Reporting entities are conducting enhanced review</small></p></div>
+                  <div><span className="signal-icon amber">◎</span><p><strong>{cases.filter((item) => item.status === "Open").length} unresolved AML cases</strong><small>Tracked against the supervisory response SLA</small></p></div>
+                  <div><span className="signal-icon green">✓</span><p><strong>{brokers.filter((broker) => broker.status === "Active").length} entities reporting normally</strong><small>No missed reporting windows in the current cycle</small></p></div>
+                </article>
+              </div>
+              <article className="panel entity-register">
+                <div className="panel-heading"><div><h2>Reporting entity register</h2><p>Licensed participants with privacy-safe compliance indicators</p></div><span className="data-protection">No customer PII</span></div>
+                <div className="table-wrap"><table><thead><tr><th>Entity</th><th>Jurisdiction</th><th>Primary corridor</th><th>Liquidity coverage</th><th>Reporting health</th><th>Status</th></tr></thead><tbody>
+                  {brokers.map((broker, index) => <tr key={broker.code}><td><strong>{broker.code}</strong><small>Entity #{String(index + 1).padStart(3, "0")}</small></td><td>{broker.city === "Amman" ? "Jordan" : broker.city === "Cairo" ? "Egypt" : "Pakistan"}</td><td>{broker.corridor}</td><td><strong>{Math.round(broker.balance / Math.max(1, Math.abs(broker.position)) * 100)}%</strong><small>Prefunded obligation cover</small></td><td><span className="report-health">✓ On time</span></td><td><span className={`broker-status ${broker.status.toLowerCase()}`}>{broker.status}</span></td></tr>)}
+                </tbody></table></div>
+              </article>
+              <div className="supervisory-footnote"><span>◇</span><p><strong>Data minimization enforced</strong>Supervisors receive aggregate flows, licensed-entity identifiers, case status, and statutory reports. Personal data requires a lawful case-level request.</p></div>
             </section>
           ) : active === "Reports" ? (
             <section className="reports-workspace">
@@ -859,7 +897,7 @@ export default function Home() {
       <nav className="mobile-nav" aria-label="Mobile navigation">
         {[...nav, "Settings"].map((item, index) => (
           <button key={item} className={active === item ? "active" : ""} onClick={() => setActive(item)}>
-            <span aria-hidden="true">{["⌂", "⇄", "◉", "◎", "◇", "▤", "⚙"][index]}</span>
+            <span aria-hidden="true">{["⌂", "⇄", "◉", "◎", "◇", "▤", "◈", "⚙"][index]}</span>
             <small>{item === "Settings" ? ui.settings : ui.nav[item as keyof typeof ui.nav]}</small>
             {item === "Compliance" && <em>3</em>}
           </button>
