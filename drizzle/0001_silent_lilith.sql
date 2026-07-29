@@ -1,0 +1,1 @@
+ALTER TABLE `transfers` ADD `created_by_email` text DEFAULT '' NOT NULL;

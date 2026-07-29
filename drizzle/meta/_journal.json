@@ -8,6 +8,13 @@
       "when": 1785351626645,
       "tag": "0000_dazzling_starhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1785351919697,
+      "tag": "0001_silent_lilith",
+      "breakpoints": true
     }
   ]
 }

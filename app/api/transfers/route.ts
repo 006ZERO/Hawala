@@ -1,4 +1,5 @@
 import { desc } from "drizzle-orm";
+import { getChatGPTUser } from "../../chatgpt-auth";
 import { getDb } from "../../../db";
 import { transfers } from "../../../db/schema";
 
@@ -20,15 +21,26 @@ function routeError(error: unknown) {
   return message;
 }
 
+async function authenticatedUser() {
+  const user = await getChatGPTUser();
+  if (!user) {
+    return null;
+  }
+  return user;
+}
+
 export async function GET() {
   try {
+    const user = await authenticatedUser();
+    if (!user) return Response.json({ error: "Sign in is required to access the transfer ledger." }, { status: 401 });
+
     const rows = await getDb()
       .select()
       .from(transfers)
       .orderBy(desc(transfers.id))
       .limit(100);
 
-    return Response.json({ transfers: rows });
+    return Response.json({ transfers: rows, viewer: { email: user.email, displayName: user.displayName } });
   } catch (error) {
     return Response.json({ error: routeError(error) }, { status: 500 });
   }
@@ -36,6 +48,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const user = await authenticatedUser();
+    if (!user) return Response.json({ error: "Sign in is required to record a transfer." }, { status: 401 });
+
     const payload = (await request.json()) as {
       customerName?: string;
       destination?: string;
@@ -65,6 +80,7 @@ export async function POST(request: Request) {
         purpose,
         risk,
         status,
+        createdByEmail: user.email,
       })
       .returning();
 

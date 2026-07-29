@@ -11,5 +11,6 @@ export const transfers = sqliteTable("transfers", {
   purpose: text("purpose").notNull(),
   risk: text("risk", { enum: ["Low", "Medium", "High"] }).notNull(),
   status: text("status", { enum: ["Cleared", "Review"] }).notNull(),
+  createdByEmail: text("created_by_email").notNull().default(""),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
