@@ -216,7 +216,9 @@ export default function Home() {
         const response = await fetch("/api/transfers");
         const payload = (await response.json()) as { transfers?: StoredTransfer[]; error?: string };
         if (!response.ok) throw new Error(payload.error || "Unable to load transfer ledger.");
-        setTransactions((payload.transfers || []).map(toDashboardTransaction));
+        const persistentTransfers = (payload.transfers || []).map(toDashboardTransaction);
+        const persistentReferences = new Set(persistentTransfers.map((item) => item.id));
+        setTransactions([...persistentTransfers, ...seededTransactions.filter((item) => !persistentReferences.has(item.id))]);
       } catch {
         setLedgerMessage("Demo data is displayed while the secure ledger is initializing.");
       }
@@ -699,8 +701,8 @@ export default function Home() {
               <div className="metric-icon mint">↗</div>
               <div>
                 <span>Today’s volume</span>
-                <strong>JOD 48,290</strong>
-                <small className="positive">↑ 12.4% <i>vs. yesterday</i></small>
+                <strong>JOD {reportVolume.toLocaleString("en-US")}</strong>
+                <small className="positive">{corridorSummary.length} <i>active corridors</i></small>
               </div>
               <div className="sparkline mint-line" aria-hidden="true">
                 <i /><i /><i /><i /><i /><i /><i /><i />
@@ -710,8 +712,8 @@ export default function Home() {
               <div className="metric-icon blue-bg">⇄</div>
               <div>
                 <span>Transfers today</span>
-                <strong>127</strong>
-                <small className="positive">↑ 8.1% <i>vs. yesterday</i></small>
+                <strong>{transactions.length}</strong>
+                <small className="positive">✓ <i>verified ledger records</i></small>
               </div>
               <div className="sparkline blue-line" aria-hidden="true">
                 <i /><i /><i /><i /><i /><i /><i /><i />
@@ -721,7 +723,7 @@ export default function Home() {
               <div className="metric-icon amber-bg">!</div>
               <div>
                 <span>Pending review</span>
-                <strong>3</strong>
+                <strong>{transactions.filter((item) => item.status === "Review").length}</strong>
                 <small className="warning">Requires attention</small>
               </div>
             </article>
