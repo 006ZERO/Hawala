@@ -25,6 +25,17 @@ type StoredTransfer = {
   createdAt: string;
 };
 
+type Customer = {
+  reference: string;
+  fullName: string;
+  nationality: string;
+  idType: "National ID" | "Passport" | "Residence permit";
+  idNumberLast4: string;
+  verificationStatus: "Verified" | "Pending review";
+  risk: "Low" | "Medium" | "High";
+  createdAt: string;
+};
+
 const seededTransactions: Transaction[] = [
   {
     id: "HW-28491",
@@ -96,10 +107,13 @@ export default function Home() {
   const [language, setLanguage] = useState("EN");
   const [showTransfer, setShowTransfer] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [showCustomer, setShowCustomer] = useState(false);
   const [created, setCreated] = useState(false);
+  const [customerCreated, setCustomerCreated] = useState(false);
   const [query, setQuery] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>(seededTransactions);
   const [ledgerMessage, setLedgerMessage] = useState("");
+  const [customers, setCustomers] = useState<Customer[]>([]);
 
   useEffect(() => {
     async function loadTransfers() {
@@ -113,6 +127,19 @@ export default function Home() {
       }
     }
     void loadTransfers();
+  }, []);
+
+  useEffect(() => {
+    async function loadCustomers() {
+      try {
+        const response = await fetch("/api/customers");
+        const payload = (await response.json()) as { customers?: Customer[] };
+        if (response.ok) setCustomers(payload.customers || []);
+      } catch {
+        // The Customers screen remains available while the service reconnects.
+      }
+    }
+    void loadCustomers();
   }, []);
 
   const filtered = useMemo(
@@ -152,6 +179,34 @@ export default function Home() {
       setCreated(false);
       setShowTransfer(false);
     }, 1800);
+  }
+
+  async function submitCustomer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    try {
+      const response = await fetch("/api/customers", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          fullName: String(formData.get("fullName") || ""),
+          nationality: String(formData.get("nationality") || ""),
+          idType: String(formData.get("idType") || "National ID"),
+          idNumber: String(formData.get("idNumber") || ""),
+        }),
+      });
+      const payload = (await response.json()) as { customer?: Customer; error?: string };
+      if (!response.ok || !payload.customer) throw new Error(payload.error || "Unable to onboard customer.");
+      setCustomers((current) => [payload.customer!, ...current]);
+      setCustomerCreated(true);
+      window.setTimeout(() => {
+        setCustomerCreated(false);
+        setShowCustomer(false);
+      }, 1600);
+    } catch (error) {
+      setLedgerMessage(error instanceof Error ? error.message : "Unable to onboard customer.");
+      setShowCustomer(false);
+    }
   }
 
   return (
@@ -236,17 +291,50 @@ export default function Home() {
         <div className="content">
           <div className="welcome">
             <div>
-              <p className="eyebrow">WEDNESDAY, 29 JULY</p>
-              <h1>Good morning, Yousef.</h1>
-              <p>Here’s what needs your attention across your network.</p>
+              <p className="eyebrow">{active === "Customers" ? "CUSTOMER DUE DILIGENCE" : "WEDNESDAY, 29 JULY"}</p>
+              <h1>{active === "Customers" ? "Customer records" : "Good morning, Yousef."}</h1>
+              <p>{active === "Customers" ? "Onboard customers and monitor identity-verification status." : "Here’s what needs your attention across your network."}</p>
             </div>
-            <button className="primary" onClick={() => setShowTransfer(true)}>
-              <span>＋</span> New transfer
+            <button className="primary" onClick={() => active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
+              <span>＋</span> {active === "Customers" ? "Add customer" : "New transfer"}
             </button>
           </div>
 
           {ledgerMessage && <div className="ledger-message" role="status">{ledgerMessage}</div>}
 
+          {active === "Customers" ? (
+            <section className="customers-workspace">
+              <div className="customer-summary">
+                <article><span>Total customers</span><strong>{customers.length}</strong><small>Registered in the secure directory</small></article>
+                <article><span>Verified</span><strong>{customers.filter((customer) => customer.verificationStatus === "Verified").length}</strong><small>Identity checks completed</small></article>
+                <article><span>Pending review</span><strong>{customers.filter((customer) => customer.verificationStatus === "Pending review").length}</strong><small>Requires compliance action</small></article>
+              </div>
+              <article className="panel customer-directory">
+                <div className="panel-heading">
+                  <div><h2>Customer directory</h2><p>Identity records and current KYC status</p></div>
+                  <span className="data-protection">Protected records</span>
+                </div>
+                <div className="table-wrap">
+                  <table>
+                    <thead><tr><th>Customer</th><th>Reference</th><th>Nationality</th><th>Identity document</th><th>Risk</th><th>KYC status</th></tr></thead>
+                    <tbody>
+                      {customers.map((customer) => (
+                        <tr key={customer.reference}>
+                          <td><div className="customer"><span className="avatar sage">{customer.fullName.split(/\s+/).slice(0, 2).map((part) => part[0]).join("")}</span><div><strong>{customer.fullName}</strong><small>Added {new Date(customer.createdAt).toLocaleDateString("en-GB")}</small></div></div></td>
+                          <td><strong>{customer.reference}</strong></td>
+                          <td>{customer.nationality}</td>
+                          <td><strong>{customer.idType}</strong><small>•••• {customer.idNumberLast4}</small></td>
+                          <td><span className={`risk ${customer.risk.toLowerCase()}`}>● {customer.risk}</span></td>
+                          <td><span className={`status ${customer.verificationStatus === "Verified" ? "cleared" : "review"}`}>{customer.verificationStatus === "Verified" ? "✓" : "◷"} {customer.verificationStatus}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {customers.length === 0 && <div className="empty customer-empty"><span>◎</span><strong>No customer records yet</strong><p>Add the first customer to demonstrate the complete KYC onboarding flow.</p><button className="primary" onClick={() => setShowCustomer(true)}>Add first customer</button></div>}
+                </div>
+              </article>
+            </section>
+          ) : (<>
           <section className="metrics" aria-label="Key metrics">
             <article>
               <div className="metric-icon mint">↗</div>
@@ -402,6 +490,7 @@ export default function Home() {
               {filtered.length === 0 && <div className="empty">No matching transactions found.</div>}
             </div>
           </section>
+          </>)}
         </div>
       </section>
 
@@ -457,6 +546,33 @@ export default function Home() {
               <button className="secondary" onClick={() => setShowAlert(false)}>Escalate case</button>
               <button className="primary" onClick={() => setShowAlert(false)}>Clear with note</button>
             </div>
+          </section>
+        </div>
+      )}
+
+      {showCustomer && (
+        <div className="modal-backdrop" onMouseDown={() => setShowCustomer(false)}>
+          <section className="modal customer-modal" onMouseDown={(event) => event.stopPropagation()} aria-modal="true" role="dialog">
+            <div className="modal-header">
+              <div><span className="eyebrow">CUSTOMER ONBOARDING</span><h2>Create a verified record</h2></div>
+              <button onClick={() => setShowCustomer(false)} aria-label="Close">×</button>
+            </div>
+            {customerCreated ? (
+              <div className="success-state"><div>✓</div><h3>Customer verified</h3><p>The KYC record was added to the secure customer directory.</p></div>
+            ) : (
+              <form onSubmit={submitCustomer}>
+                <div className="progress"><span className="complete" /><span className="complete" /><span className="complete" /></div>
+                <div className="step-labels"><span>Identity</span><span>Document</span><span>Verification</span></div>
+                <label>Full legal name<input name="fullName" required placeholder="As shown on the identity document" autoComplete="name" /></label>
+                <div className="form-row">
+                  <label>Nationality<select name="nationality" defaultValue="Jordan"><option>Jordan</option><option>Egypt</option><option>Pakistan</option><option>Philippines</option><option>Morocco</option></select></label>
+                  <label>Identity type<select name="idType" defaultValue="National ID"><option>National ID</option><option>Passport</option><option>Residence permit</option></select></label>
+                </div>
+                <label>Identity number<input name="idNumber" required minLength={4} placeholder="Only the final four characters are retained" autoComplete="off" /></label>
+                <div className="privacy-note"><span>◇</span><div><strong>Data minimization enabled</strong><p>The demo stores only the final four identity characters, verification result, and audit attribution.</p></div></div>
+                <button className="primary full" type="submit">Verify and create customer</button>
+              </form>
+            )}
           </section>
         </div>
       )}

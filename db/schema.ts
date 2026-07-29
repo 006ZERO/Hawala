@@ -14,3 +14,16 @@ export const transfers = sqliteTable("transfers", {
   createdByEmail: text("created_by_email").notNull().default(""),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const customers = sqliteTable("customers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  reference: text("reference").notNull().unique(),
+  fullName: text("full_name").notNull(),
+  nationality: text("nationality").notNull(),
+  idType: text("id_type", { enum: ["National ID", "Passport", "Residence permit"] }).notNull(),
+  idNumberLast4: text("id_number_last4").notNull(),
+  verificationStatus: text("verification_status", { enum: ["Verified", "Pending review"] }).notNull(),
+  risk: text("risk", { enum: ["Low", "Medium", "High"] }).notNull(),
+  createdByEmail: text("created_by_email").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});

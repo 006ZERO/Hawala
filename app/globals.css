@@ -166,6 +166,22 @@ td small { display: block; color: #98a19e; font-size: 8px; margin-top: 3px; }
 .risk.medium { color: #9d6c28; background: #faefdE; }
 .risk.high, .status.review { color: #b5434b; background: #fbe9eb; }
 .empty { padding: 40px; text-align: center; color: var(--muted); font-size: 12px; }
+.customers-workspace { display: grid; gap: 14px; }
+.customer-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
+.customer-summary article { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 6px; }
+.customer-summary span { color: #7a8783; font-size: 10px; }
+.customer-summary strong { font-family: Georgia, "Times New Roman", serif; font-size: 27px; font-weight: 500; }
+.customer-summary small { color: #96a09c; font-size: 8.5px; }
+.customer-directory { overflow: hidden; min-height: 330px; }
+.data-protection { border: 1px solid #d9e8e2; border-radius: 99px; background: #f2f8f5; color: var(--green); padding: 6px 10px; font-size: 8px; font-weight: 800; }
+.customer-empty { display: grid; place-items: center; padding: 64px 20px; }
+.customer-empty > span { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: var(--mint); color: var(--green); font-size: 20px; margin-bottom: 8px; }
+.customer-empty strong { color: var(--ink); font-family: Georgia, serif; font-size: 18px; font-weight: 500; }
+.customer-empty p { max-width: 340px; margin: 2px 0 14px; font-size: 9px; line-height: 1.5; }
+.privacy-note { display: flex; gap: 10px; align-items: flex-start; background: #f5f8f7; border: 1px solid #e0e7e3; border-radius: 9px; padding: 12px; }
+.privacy-note > span { color: var(--green); font-size: 17px; }
+.privacy-note strong { display: block; font-size: 10px; }
+.privacy-note p { margin: 3px 0 0; color: #73807c; font-size: 9px; line-height: 1.45; }
 
 .modal-backdrop { position: fixed; inset: 0; z-index: 20; background: #14211dd1; display: grid; place-items: center; padding: 20px; backdrop-filter: blur(3px); }
 .modal { width: min(520px, 100%); max-height: 92vh; overflow-y: auto; background: white; border-radius: 16px; box-shadow: 0 25px 80px #0004; animation: enter .2s ease-out; }
@@ -226,6 +242,7 @@ td small { display: block; color: #98a19e; font-size: 8px; margin-top: 3px; }
   .welcome .primary { padding: 11px 12px; white-space: nowrap; }
   .welcome .primary span { display: none; }
   .metrics { grid-template-columns: 1fr 1fr; }
+  .customer-summary { grid-template-columns: 1fr; }
   .metrics article { padding: 14px; min-height: 110px; }
   .sparkline { display: none; }
 }
