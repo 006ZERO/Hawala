@@ -128,6 +128,8 @@ export default function Home() {
   const [language, setLanguage] = useState("EN");
   const [showTransfer, setShowTransfer] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [showStr, setShowStr] = useState(false);
+  const [strSubmitted, setStrSubmitted] = useState(false);
   const [showCustomer, setShowCustomer] = useState(false);
   const [created, setCreated] = useState(false);
   const [customerCreated, setCustomerCreated] = useState(false);
@@ -591,7 +593,7 @@ export default function Home() {
                     </div>
                     <div className="case-section"><h3>Explainable triggers</h3>{JSON.parse(selectedCase.reasons).map((reason: string, index: number) => <div className="case-reason" key={reason}><span>{String(index + 1).padStart(2, "0")}</span><p>{reason}</p></div>)}</div>
                     <div className="case-section timeline"><h3>Case timeline</h3><div><span>✓</span><p><strong>Alert created</strong><small>{new Date(selectedCase.createdAt).toLocaleString("en-GB")}</small></p></div>{selectedCase.status !== "Open" && <div><span>✓</span><p><strong>{selectedCase.status} by analyst</strong><small>{selectedCase.assignedToEmail}</small></p></div>}</div>
-                    {selectedCase.status === "Open" ? <div className="case-decision"><label>Investigation note<textarea value={caseNote} onChange={(event) => setCaseNote(event.target.value)} placeholder="Document evidence reviewed and the reason for your decision…" /></label><div><button className="secondary" onClick={() => decideCase("Escalated")}>Escalate case</button><button className="primary" onClick={() => decideCase("Cleared")}>Clear with note</button></div></div> : <div className="decision-record"><span>✓</span><div><strong>Decision recorded: {selectedCase.status}</strong><p>{selectedCase.note}</p></div></div>}
+                    {selectedCase.status === "Open" ? <div className="case-decision"><label>Investigation note<textarea value={caseNote} onChange={(event) => setCaseNote(event.target.value)} placeholder="Document evidence reviewed and the reason for your decision…" /></label><div><button className="secondary" onClick={() => decideCase("Escalated")}>Escalate case</button><button className="primary" onClick={() => decideCase("Cleared")}>Clear with note</button></div></div> : <div className="decision-record"><span>✓</span><div><strong>Decision recorded: {selectedCase.status}</strong><p>{selectedCase.note}</p>{selectedCase.status === "Escalated" && <button className="str-action" onClick={() => { setStrSubmitted(false); setShowStr(true); }}>Prepare suspicious transaction report →</button>}</div></div>}
                   </> : <div className="empty">Select a case to begin the review.</div>}
                 </article>
               </div>
@@ -836,6 +838,41 @@ export default function Home() {
               <button className="secondary" onClick={() => setShowAlert(false)}>Escalate case</button>
               <button className="primary" onClick={() => setShowAlert(false)}>Clear with note</button>
             </div>
+          </section>
+        </div>
+      )}
+
+      {showStr && selectedCase && (
+        <div className="modal-backdrop" onMouseDown={() => setShowStr(false)}>
+          <section className="modal str-modal" onMouseDown={(event) => event.stopPropagation()} aria-modal="true" role="dialog" aria-labelledby="str-title">
+            <div className="modal-header">
+              <div><span className="eyebrow red-text">REGULATORY FILING · DRAFT</span><h2 id="str-title">Suspicious transaction report</h2></div>
+              <button onClick={() => setShowStr(false)} aria-label="Close">×</button>
+            </div>
+            {strSubmitted ? (
+              <div className="str-receipt">
+                <div>✓</div>
+                <h3>Report submitted securely</h3>
+                <p>The regulator acknowledged receipt of the filing.</p>
+                <dl><div><dt>Receipt</dt><dd>STR-JO-2026-00418</dd></div><div><dt>Submitted by</dt><dd>{selectedCase.assignedToEmail || "Current compliance officer"}</dd></div><div><dt>Status</dt><dd>Accepted for review</dd></div></dl>
+                <button className="primary full" onClick={() => setShowStr(false)}>Return to case</button>
+              </div>
+            ) : (
+              <>
+                <div className="str-notice"><span>◇</span><p><strong>Prefilled from the case evidence trail</strong>Review the report before encrypted submission to the financial intelligence unit.</p></div>
+                <div className="str-fields">
+                  <div><span>Reporting entity</span><strong>HAWALA Compliance OS · CBJ EXC-2026-041</strong></div>
+                  <div><span>Case reference</span><strong>{selectedCase.reference}</strong></div>
+                  <div><span>Subject</span><strong>{selectedCase.customerName}</strong></div>
+                  <div><span>Transaction</span><strong>{selectedCase.transferReference}</strong></div>
+                  <div className="wide"><span>Suspicion category</span><strong>{selectedCase.caseType}</strong></div>
+                  <div className="wide"><span>Automated indicators</span><p>{JSON.parse(selectedCase.reasons).join(" · ")}</p></div>
+                </div>
+                <label className="str-narrative">Regulatory narrative<textarea defaultValue={`${selectedCase.customerName} was escalated following automated detection of ${selectedCase.caseType.toLowerCase()}. The transaction and related customer activity were reviewed against the recorded risk indicators. The reporting entity is submitting this report for supervisory assessment; no conclusion of criminal conduct has been made.`} /></label>
+                <div className="str-certification"><span>✓</span><p>I certify that this filing reflects the evidence available in the case record and is submitted in good faith.</p></div>
+                <div className="modal-actions"><button className="secondary" onClick={() => setShowStr(false)}>Save draft</button><button className="primary" onClick={() => setStrSubmitted(true)}>Submit encrypted STR</button></div>
+              </>
+            )}
           </section>
         </div>
       )}

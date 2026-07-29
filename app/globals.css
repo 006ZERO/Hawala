@@ -324,6 +324,31 @@ td small { display: block; color: #98a19e; font-size: 8px; margin-top: 3px; }
 .decision-record > span { color: var(--green); font-weight: 800; }
 .decision-record strong { font-size: 10px; }
 .decision-record p { color: #687671; font-size: 9px; line-height: 1.5; margin: 4px 0 0; }
+.str-action { margin-top: 9px; border: 0; background: transparent; color: var(--green); padding: 0; font-size: 8.5px; font-weight: 800; }
+.str-modal { width: min(640px, 100%); }
+.str-notice { display: flex; align-items: center; gap: 10px; margin: 16px 22px 4px; padding: 11px 12px; border: 1px solid #d9e8e2; border-radius: 8px; background: #f5faf8; }
+.str-notice > span { color: var(--green); font-size: 16px; }
+.str-notice p { margin: 0; color: var(--muted); font-size: 8.5px; line-height: 1.5; }
+.str-notice strong { display: block; color: var(--ink); font-size: 9px; }
+.str-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px 22px; }
+.str-fields > div { display: grid; gap: 4px; padding: 10px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fafbfa; }
+.str-fields .wide { grid-column: 1 / -1; }
+.str-fields span { color: var(--muted); font-size: 7.5px; text-transform: uppercase; letter-spacing: .5px; }
+.str-fields strong { font-size: 9px; }
+.str-fields p { margin: 0; color: #596762; font-size: 8.5px; line-height: 1.45; }
+.str-narrative { display: grid; gap: 7px; padding: 0 22px 14px; color: #596762; font-size: 9px; font-weight: 800; }
+.str-narrative textarea { min-height: 96px; width: 100%; border: 1px solid #dce3df; border-radius: 8px; padding: 11px; color: var(--ink); font-size: 9px; line-height: 1.55; resize: vertical; }
+.str-certification { display: flex; gap: 9px; margin: 0 22px 15px; padding: 10px 11px; border-radius: 8px; background: #f1f5f3; color: var(--green); }
+.str-certification p { margin: 0; color: #65736e; font-size: 8px; line-height: 1.45; }
+.str-receipt { padding: 40px 34px 34px; text-align: center; }
+.str-receipt > div:first-child { width: 56px; height: 56px; display: grid; place-items: center; margin: auto; border-radius: 50%; background: var(--mint); color: var(--green); font-size: 24px; }
+.str-receipt h3 { margin: 15px 0 6px; font-family: Georgia, serif; font-size: 23px; font-weight: 500; }
+.str-receipt > p { margin: 0; color: var(--muted); font-size: 10px; }
+.str-receipt dl { margin: 20px 0; padding: 0; border: 1px solid var(--line); border-radius: 9px; text-align: left; overflow: hidden; }
+.str-receipt dl div { display: flex; justify-content: space-between; gap: 15px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.str-receipt dl div:last-child { border-bottom: 0; }
+.str-receipt dt { color: var(--muted); font-size: 8px; }
+.str-receipt dd { margin: 0; font-size: 8.5px; font-weight: 800; }
 
 .reports-workspace { display: grid; gap: 14px; }
 .report-period { margin: 5px 0 0; color: var(--muted); font-size: 9px; }
@@ -448,6 +473,8 @@ td small { display: block; color: #98a19e; font-size: 8px; margin-top: 3px; }
   .settings-footer { align-items: stretch; flex-direction: column; }
   .ledger-filters { flex-wrap: wrap; }
   .ledger-filters > span { width: 100%; margin-left: 0; padding-bottom: 0; }
+  .str-fields { grid-template-columns: 1fr; }
+  .str-fields .wide { grid-column: auto; }
   .modal-header, .modal form, .reasons { padding-left: 18px; padding-right: 18px; }
   .modal-actions { padding-left: 18px; padding-right: 18px; }
 }
