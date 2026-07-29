@@ -135,6 +135,13 @@ export default function Home() {
   const [riskFilter, setRiskFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [settlementRun, setSettlementRun] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const [screeningRules, setScreeningRules] = useState({
+    sanctions: true,
+    pep: true,
+    adverseMedia: false,
+    velocity: true,
+  });
   const [transactions, setTransactions] = useState<Transaction[]>(seededTransactions);
   const [ledgerMessage, setLedgerMessage] = useState("");
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -351,7 +358,7 @@ export default function Home() {
               <small>CBJ / EXC-2026-041</small>
             </div>
           </div>
-          <button className="nav-item settings">
+          <button className={active === "Settings" ? "nav-item settings active" : "nav-item settings"} onClick={() => setActive("Settings")}>
             <span className="nav-icon">⚙</span> Settings
           </button>
           <div className="user-card">
@@ -395,18 +402,54 @@ export default function Home() {
         <div className="content">
           <div className="welcome">
             <div>
-              <p className="eyebrow">{active === "Brokers" ? "TRUSTED BROKER NETWORK" : active === "Transactions" ? "SECURE TRANSFER LEDGER" : active === "Customers" ? "CUSTOMER DUE DILIGENCE" : active === "Compliance" ? "AML CASE MANAGEMENT" : active === "Reports" ? "REGULATORY INTELLIGENCE" : "WEDNESDAY, 29 JULY"}</p>
-              <h1>{active === "Brokers" ? "Broker settlement" : active === "Transactions" ? "Transactions" : active === "Customers" ? "Customer records" : active === "Compliance" ? "Compliance review" : active === "Reports" ? "Reporting center" : "Good morning, Yousef."}</h1>
-              <p>{active === "Brokers" ? "Monitor registered brokers, liquidity, and net corridor obligations." : active === "Transactions" ? "Search, filter, and review every recorded transfer." : active === "Customers" ? "Onboard customers and monitor identity-verification status." : active === "Compliance" ? "Investigate alerts, document reasoning, and record accountable decisions." : active === "Reports" ? "Monitor remittance exposure and prepare regulator-ready evidence." : "Here’s what needs your attention across your network."}</p>
+              <p className="eyebrow">{active === "Settings" ? "PLATFORM ADMINISTRATION" : active === "Brokers" ? "TRUSTED BROKER NETWORK" : active === "Transactions" ? "SECURE TRANSFER LEDGER" : active === "Customers" ? "CUSTOMER DUE DILIGENCE" : active === "Compliance" ? "AML CASE MANAGEMENT" : active === "Reports" ? "REGULATORY INTELLIGENCE" : "WEDNESDAY, 29 JULY"}</p>
+              <h1>{active === "Settings" ? "Compliance settings" : active === "Brokers" ? "Broker settlement" : active === "Transactions" ? "Transactions" : active === "Customers" ? "Customer records" : active === "Compliance" ? "Compliance review" : active === "Reports" ? "Reporting center" : "Good morning, Yousef."}</h1>
+              <p>{active === "Settings" ? "Configure screening policy, access controls, and regulatory integrations." : active === "Brokers" ? "Monitor registered brokers, liquidity, and net corridor obligations." : active === "Transactions" ? "Search, filter, and review every recorded transfer." : active === "Customers" ? "Onboard customers and monitor identity-verification status." : active === "Compliance" ? "Investigate alerts, document reasoning, and record accountable decisions." : active === "Reports" ? "Monitor remittance exposure and prepare regulator-ready evidence." : "Here’s what needs your attention across your network."}</p>
             </div>
-            {active !== "Compliance" && active !== "Brokers" && <button className="primary" onClick={() => active === "Reports" ? exportRegulatoryCsv() : active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
+            {active !== "Compliance" && active !== "Brokers" && active !== "Settings" && <button className="primary" onClick={() => active === "Reports" ? exportRegulatoryCsv() : active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
               <span>{active === "Reports" ? "↓" : "＋"}</span> {active === "Reports" ? "Export CSV" : active === "Customers" ? "Add customer" : "New transfer"}
             </button>}
           </div>
 
           {ledgerMessage && <div className="ledger-message" role="status">{ledgerMessage}</div>}
 
-          {active === "Brokers" ? (
+          {active === "Settings" ? (
+            <section className="settings-workspace">
+              {settingsSaved && <div className="settings-success" role="status">✓ Configuration saved and added to the audit trail.</div>}
+              <div className="settings-grid">
+                <article className="panel settings-card">
+                  <div className="panel-heading"><div><h2>Automated screening</h2><p>Controls applied to every transfer in real time</p></div><span className="settings-badge">Policy v3.4</span></div>
+                  <div className="setting-list">
+                    {[
+                      ["sanctions", "Sanctions screening", "UN, OFAC, EU, and UK consolidated lists"],
+                      ["pep", "PEP screening", "Politically exposed persons and close associates"],
+                      ["adverseMedia", "Adverse media", "Negative-news signals from approved providers"],
+                      ["velocity", "Velocity monitoring", "Detect structuring and unusual transaction bursts"],
+                    ].map(([key, title, description]) => (
+                      <div className="setting-row" key={key}>
+                        <div><strong>{title}</strong><span>{description}</span></div>
+                        <button className={screeningRules[key as keyof typeof screeningRules] ? "toggle on" : "toggle"} aria-label={`Toggle ${title}`} aria-pressed={screeningRules[key as keyof typeof screeningRules]} onClick={() => setScreeningRules((current) => ({ ...current, [key]: !current[key as keyof typeof current] }))}><i /></button>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+                <article className="panel settings-card">
+                  <div className="panel-heading"><div><h2>Regulatory connection</h2><p>Supervisory reporting destination</p></div><span className="connection-live">● Connected</span></div>
+                  <div className="regulator-profile"><span className="shield">✓</span><div><strong>Central Bank of Jordan</strong><small>Regulatory sandbox · EXC-2026-041</small></div></div>
+                  <dl className="connection-details"><div><dt>Reporting mode</dt><dd>Secure API submission</dd></div><div><dt>STR workflow</dt><dd>Analyst approval required</dd></div><div><dt>Last synchronization</dt><dd>Today, 10:45 AM</dd></div><div><dt>Data residency</dt><dd>Jordan region</dd></div></dl>
+                </article>
+                <article className="panel settings-card">
+                  <div className="panel-heading"><div><h2>Roles and approvals</h2><p>Separation of duties for sensitive actions</p></div></div>
+                  <div className="role-list"><div><span className="avatar dark">YK</span><p><strong>Yousef Khoury</strong><small>Compliance officer · Case decisions</small></p><em>Administrator</em></div><div><span className="avatar sage">LA</span><p><strong>Lina Abu-Salem</strong><small>Operations · Transfer initiation</small></p><em>Operator</em></div><div><span className="avatar blue">RM</span><p><strong>Rami Mansour</strong><small>Internal audit · Read-only access</small></p><em>Auditor</em></div></div>
+                </article>
+                <article className="panel settings-card">
+                  <div className="panel-heading"><div><h2>Audit controls</h2><p>Evidence retention and accountable actions</p></div></div>
+                  <div className="audit-settings"><label>Evidence retention<select defaultValue="7 years"><option>5 years</option><option>7 years</option><option>10 years</option></select></label><label>Case approval threshold<select defaultValue="Risk score 70+"><option>Risk score 60+</option><option>Risk score 70+</option><option>All escalations</option></select></label><div><span>Immutable decision trail</span><strong>Enabled</strong></div><div><span>Analyst identity attribution</span><strong>Required</strong></div></div>
+                </article>
+              </div>
+              <div className="settings-footer"><div><strong>Changes require administrator authority</strong><span>Every configuration change is timestamped and attributed.</span></div><button className="primary" onClick={() => { setSettingsSaved(true); window.setTimeout(() => setSettingsSaved(false), 3500); }}>Save configuration</button></div>
+            </section>
+          ) : active === "Brokers" ? (
             <section className="broker-workspace">
               <div className="broker-summary">
                 <article><span>Registered brokers</span><strong>{brokers.length}</strong><small>Across three countries</small></article>
