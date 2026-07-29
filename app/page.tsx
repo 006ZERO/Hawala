@@ -14,6 +14,17 @@ type Transaction = {
   tone: string;
 };
 
+type StoredTransfer = {
+  reference: string;
+  customerName: string;
+  customerInitials: string;
+  destination: string;
+  amountJod: number;
+  risk: "Low" | "Medium" | "High";
+  status: "Cleared" | "Review";
+  createdAt: string;
+};
+
 const seededTransactions: Transaction[] = [
   {
     id: "HW-28491",
@@ -63,6 +74,23 @@ const seededTransactions: Transaction[] = [
 
 const nav = ["Overview", "Transactions", "Customers", "Compliance", "Reports"];
 
+function toDashboardTransaction(transfer: StoredTransfer): Transaction {
+  return {
+    id: transfer.reference,
+    customer: transfer.customerName,
+    initials: transfer.customerInitials,
+    corridor: `Jordan → ${transfer.destination}`,
+    amount: `JOD ${transfer.amountJod.toLocaleString("en-US")}`,
+    time: new Date(transfer.createdAt).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    }),
+    risk: transfer.risk,
+    status: transfer.status,
+    tone: transfer.risk === "High" ? "rose" : transfer.risk === "Medium" ? "amber" : "sage",
+  };
+}
+
 export default function Home() {
   const [active, setActive] = useState("Overview");
   const [language, setLanguage] = useState("EN");
@@ -71,25 +99,21 @@ export default function Home() {
   const [created, setCreated] = useState(false);
   const [query, setQuery] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>(seededTransactions);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [ledgerMessage, setLedgerMessage] = useState("");
 
   useEffect(() => {
-    const savedTransactions = window.localStorage.getItem("hawala-transactions");
-    if (savedTransactions) {
+    async function loadTransfers() {
       try {
-        const parsedTransactions = JSON.parse(savedTransactions) as Transaction[];
-        if (Array.isArray(parsedTransactions)) setTransactions(parsedTransactions);
+        const response = await fetch("/api/transfers");
+        const payload = (await response.json()) as { transfers?: StoredTransfer[]; error?: string };
+        if (!response.ok) throw new Error(payload.error || "Unable to load transfer ledger.");
+        setTransactions((payload.transfers || []).map(toDashboardTransaction));
       } catch {
-        window.localStorage.removeItem("hawala-transactions");
+        setLedgerMessage("Demo data is displayed while the secure ledger is initializing.");
       }
     }
-    setIsHydrated(true);
+    void loadTransfers();
   }, []);
-
-  useEffect(() => {
-    if (!isHydrated) return;
-    window.localStorage.setItem("hawala-transactions", JSON.stringify(transactions));
-  }, [isHydrated, transactions]);
 
   const filtered = useMemo(
     () =>
@@ -101,35 +125,29 @@ export default function Home() {
     [query],
   );
 
-  function submitTransfer(event: FormEvent<HTMLFormElement>) {
+  async function submitTransfer(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const customer = String(formData.get("sender") || "New customer");
     const destination = String(formData.get("destination") || "Egypt");
     const amount = Number(formData.get("amount") || 0);
-    const initials = customer
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join("")
-      .toUpperCase();
-    const isReview = amount >= 3000;
+    const purpose = String(formData.get("purpose") || "Family support");
 
-    setTransactions((currentTransactions) => [
-      {
-        id: `HW-${28492 + currentTransactions.length - seededTransactions.length}`,
-        customer,
-        initials: initials || "NC",
-        corridor: `Jordan → ${destination}`,
-        amount: `JOD ${amount.toLocaleString("en-US")}`,
-        time: "Just now",
-        risk: isReview ? "Medium" : "Low",
-        status: isReview ? "Review" : "Cleared",
-        tone: isReview ? "amber" : "sage",
-      },
-      ...currentTransactions,
-    ]);
-    setCreated(true);
+    try {
+      const response = await fetch("/api/transfers", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ customerName: customer, destination, amountJod: amount, purpose }),
+      });
+      const payload = (await response.json()) as { transfer?: StoredTransfer; error?: string };
+      if (!response.ok || !payload.transfer) throw new Error(payload.error || "Unable to record the transfer.");
+
+      setTransactions((currentTransactions) => [toDashboardTransaction(payload.transfer!), ...currentTransactions]);
+      setLedgerMessage("");
+      setCreated(true);
+    } catch (error) {
+      setLedgerMessage(error instanceof Error ? error.message : "Unable to record the transfer.");
+    }
     window.setTimeout(() => {
       setCreated(false);
       setShowTransfer(false);
@@ -226,6 +244,8 @@ export default function Home() {
               <span>＋</span> New transfer
             </button>
           </div>
+
+          {ledgerMessage && <div className="ledger-message" role="status">{ledgerMessage}</div>}
 
           <section className="metrics" aria-label="Key metrics">
             <article>
@@ -407,7 +427,7 @@ export default function Home() {
                   <label>Destination<select name="destination" defaultValue="Egypt"><option>Egypt</option><option>Pakistan</option><option>Philippines</option><option>Morocco</option></select></label>
                   <label>Amount (JOD)<input name="amount" required type="number" defaultValue="1240" min="1" /></label>
                 </div>
-                <label>Transfer purpose<select defaultValue="Family support"><option>Family support</option><option>Education</option><option>Medical expenses</option><option>Salary</option></select></label>
+                <label>Transfer purpose<select name="purpose" defaultValue="Family support"><option>Family support</option><option>Education</option><option>Medical expenses</option><option>Salary</option></select></label>
                 <div className="screening-result"><span>✓</span><div><strong>Screening complete</strong><p>No sanctions or PEP matches · Risk score 12/100</p></div></div>
                 <button className="primary full" type="submit">Approve and record transfer</button>
               </form>
