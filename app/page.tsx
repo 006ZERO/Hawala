@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type Transaction = {
   id: string;
@@ -14,7 +14,7 @@ type Transaction = {
   tone: string;
 };
 
-const transactions: Transaction[] = [
+const seededTransactions: Transaction[] = [
   {
     id: "HW-28491",
     customer: "Ahmad Al-Khatib",
@@ -70,6 +70,26 @@ export default function Home() {
   const [showAlert, setShowAlert] = useState(false);
   const [created, setCreated] = useState(false);
   const [query, setQuery] = useState("");
+  const [transactions, setTransactions] = useState<Transaction[]>(seededTransactions);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    const savedTransactions = window.localStorage.getItem("hawala-transactions");
+    if (savedTransactions) {
+      try {
+        const parsedTransactions = JSON.parse(savedTransactions) as Transaction[];
+        if (Array.isArray(parsedTransactions)) setTransactions(parsedTransactions);
+      } catch {
+        window.localStorage.removeItem("hawala-transactions");
+      }
+    }
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    window.localStorage.setItem("hawala-transactions", JSON.stringify(transactions));
+  }, [isHydrated, transactions]);
 
   const filtered = useMemo(
     () =>
@@ -83,6 +103,32 @@ export default function Home() {
 
   function submitTransfer(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const customer = String(formData.get("sender") || "New customer");
+    const destination = String(formData.get("destination") || "Egypt");
+    const amount = Number(formData.get("amount") || 0);
+    const initials = customer
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase();
+    const isReview = amount >= 3000;
+
+    setTransactions((currentTransactions) => [
+      {
+        id: `HW-${28492 + currentTransactions.length - seededTransactions.length}`,
+        customer,
+        initials: initials || "NC",
+        corridor: `Jordan → ${destination}`,
+        amount: `JOD ${amount.toLocaleString("en-US")}`,
+        time: "Just now",
+        risk: isReview ? "Medium" : "Low",
+        status: isReview ? "Review" : "Cleared",
+        tone: isReview ? "amber" : "sage",
+      },
+      ...currentTransactions,
+    ]);
     setCreated(true);
     window.setTimeout(() => {
       setCreated(false);
@@ -356,10 +402,10 @@ export default function Home() {
               <form onSubmit={submitTransfer}>
                 <div className="progress"><span className="complete" /><span className="complete" /><span /></div>
                 <div className="step-labels"><span>Customer</span><span>Transfer</span><span>Review</span></div>
-                <label>Sender<input required defaultValue="Ahmad Al-Khatib" /></label>
-                <div className="form-row">
-                  <label>Destination<select defaultValue="Egypt"><option>Egypt</option><option>Pakistan</option><option>Philippines</option><option>Morocco</option></select></label>
-                  <label>Amount (JOD)<input required type="number" defaultValue="1240" min="1" /></label>
+                  <label>Sender<input name="sender" required defaultValue="Ahmad Al-Khatib" /></label>
+                  <div className="form-row">
+                  <label>Destination<select name="destination" defaultValue="Egypt"><option>Egypt</option><option>Pakistan</option><option>Philippines</option><option>Morocco</option></select></label>
+                  <label>Amount (JOD)<input name="amount" required type="number" defaultValue="1240" min="1" /></label>
                 </div>
                 <label>Transfer purpose<select defaultValue="Family support"><option>Family support</option><option>Education</option><option>Medical expenses</option><option>Salary</option></select></label>
                 <div className="screening-result"><span>✓</span><div><strong>Screening complete</strong><p>No sanctions or PEP matches · Risk score 12/100</p></div></div>
