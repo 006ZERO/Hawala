@@ -85,6 +85,7 @@ nav { display: grid; gap: 5px; }
 kbd { background: #f1f3f2; border: 1px solid #e1e5e3; color: #8b9692; border-radius: 5px; padding: 3px 7px; font-family: inherit; font-size: 9px; }
 .top-actions { display: flex; align-items: center; gap: 19px; }
 .language, .notification { border: 0; background: transparent; color: #4e5d58; font-size: 11px; font-weight: 700; }
+.language { max-width: 92px; outline: 0; }
 .notification { position: relative; font-size: 22px; }
 .notification span { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #d6555d; top: 3px; right: 0; border: 1px solid white; }
 .content { max-width: 1440px; margin: auto; padding: 34px 40px 52px; }
@@ -96,6 +97,14 @@ kbd { background: #f1f3f2; border: 1px solid #e1e5e3; color: #8b9692; border-rad
 .primary { border: 0; border-radius: 9px; padding: 12px 18px; background: var(--green); color: white; font-size: 11px; font-weight: 800; box-shadow: 0 5px 12px #176f5d29; }
 .primary:hover { background: var(--green-dark); }
 .primary span { font-size: 16px; margin-right: 6px; vertical-align: -1px; }
+
+.app-shell[dir="rtl"] .sidebar { inset: 0 0 0 auto; border-right: 0; border-left: 1px solid var(--line); }
+.app-shell[dir="rtl"] .workspace { margin-left: 0; margin-right: 242px; }
+.app-shell[dir="rtl"] .nav-item { text-align: right; }
+.app-shell[dir="rtl"] .nav-item em { margin-left: 0; margin-right: auto; }
+.app-shell[dir="rtl"] .search > span { margin-right: 0; margin-left: 8px; }
+.app-shell[dir="rtl"] .primary span { margin-right: 0; margin-left: 6px; }
+.app-shell[dir="rtl"] th { text-align: right; }
 
 .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; margin-bottom: 14px; }
 .metrics article {
@@ -430,6 +439,7 @@ td small { display: block; color: #98a19e; font-size: 8px; margin-top: 3px; }
 @media (max-width: 760px) {
   .sidebar { display: none; }
   .workspace { width: 100%; margin-left: 0; }
+  .app-shell[dir="rtl"] .workspace { margin-right: 0; }
   .topbar { height: 62px; padding: 0 18px; }
   .mobile-brand { display: block; font-size: 12px; letter-spacing: 2px; font-weight: 900; color: var(--green); }
   .search { width: 46%; }

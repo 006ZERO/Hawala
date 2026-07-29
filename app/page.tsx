@@ -99,6 +99,63 @@ const seededTransactions: Transaction[] = [
 
 const nav = ["Overview", "Transactions", "Brokers", "Customers", "Compliance", "Reports"];
 
+const translations = {
+  EN: {
+    search: "Search people or transactions", settings: "Settings", officer: "Compliance officer",
+    nav: { Overview: "Overview", Transactions: "Transactions", Brokers: "Brokers", Customers: "Customers", Compliance: "Compliance", Reports: "Reports" },
+    welcome: {
+      Overview: ["WEDNESDAY, 29 JULY", "Good morning, Yousef.", "Here’s what needs your attention across your network."],
+      Transactions: ["SECURE TRANSFER LEDGER", "Transactions", "Search, filter, and review every recorded transfer."],
+      Brokers: ["TRUSTED BROKER NETWORK", "Broker settlement", "Monitor registered brokers, liquidity, and net corridor obligations."],
+      Customers: ["CUSTOMER DUE DILIGENCE", "Customer records", "Onboard customers and monitor identity-verification status."],
+      Compliance: ["AML CASE MANAGEMENT", "Compliance review", "Investigate alerts, document reasoning, and record accountable decisions."],
+      Reports: ["REGULATORY INTELLIGENCE", "Reporting center", "Monitor remittance exposure and prepare regulator-ready evidence."],
+      Settings: ["PLATFORM ADMINISTRATION", "Compliance settings", "Configure screening policy, access controls, and regulatory integrations."],
+    },
+  },
+  AR: {
+    search: "ابحث عن أشخاص أو معاملات", settings: "الإعدادات", officer: "مسؤول الامتثال",
+    nav: { Overview: "نظرة عامة", Transactions: "المعاملات", Brokers: "الوكلاء", Customers: "العملاء", Compliance: "الامتثال", Reports: "التقارير" },
+    welcome: {
+      Overview: ["الأربعاء، 29 يوليو", "صباح الخير، يوسف.", "إليك ما يحتاج إلى اهتمامك عبر الشبكة."],
+      Transactions: ["سجل التحويلات الآمن", "المعاملات", "ابحث وصفِّ وراجع كل تحويل مسجل."],
+      Brokers: ["شبكة الوكلاء الموثوقة", "تسوية الوكلاء", "راقب الوكلاء المسجلين والسيولة والالتزامات."],
+      Customers: ["العناية الواجبة بالعملاء", "سجلات العملاء", "سجّل العملاء وتابع حالة التحقق من الهوية."],
+      Compliance: ["إدارة حالات مكافحة غسل الأموال", "مراجعة الامتثال", "حقق في التنبيهات ووثّق القرارات المسؤولة."],
+      Reports: ["المعلومات الرقابية", "مركز التقارير", "راقب التحويلات وجهّز الأدلة الرقابية."],
+      Settings: ["إدارة المنصة", "إعدادات الامتثال", "اضبط سياسات الفحص والصلاحيات والتكامل الرقابي."],
+    },
+  },
+  UR: {
+    search: "افراد یا لین دین تلاش کریں", settings: "ترتیبات", officer: "کمپلائنس افسر",
+    nav: { Overview: "جائزہ", Transactions: "لین دین", Brokers: "بروکرز", Customers: "صارفین", Compliance: "تعمیل", Reports: "رپورٹس" },
+    welcome: {
+      Overview: ["بدھ، 29 جولائی", "صبح بخیر، یوسف۔", "آپ کے نیٹ ورک میں توجہ طلب امور یہاں ہیں۔"],
+      Transactions: ["محفوظ ترسیلی لیجر", "لین دین", "ہر درج شدہ ترسیل تلاش، فلٹر اور جانچیں۔"],
+      Brokers: ["قابل اعتماد بروکر نیٹ ورک", "بروکر سیٹلمنٹ", "رجسٹرڈ بروکرز، لیکویڈیٹی اور واجبات دیکھیں۔"],
+      Customers: ["صارف کی مکمل جانچ", "صارف ریکارڈز", "صارفین شامل کریں اور شناختی تصدیق دیکھیں۔"],
+      Compliance: ["اے ایم ایل کیس مینجمنٹ", "تعمیل کا جائزہ", "الرٹس کی تحقیق اور فیصلوں کی دستاویز بندی کریں۔"],
+      Reports: ["ریگولیٹری انٹیلیجنس", "رپورٹنگ سینٹر", "ترسیلات کی نگرانی اور ریگولیٹری ثبوت تیار کریں۔"],
+      Settings: ["پلیٹ فارم انتظام", "تعمیل کی ترتیبات", "اسکریننگ، رسائی اور ریگولیٹری رابطے ترتیب دیں۔"],
+    },
+  },
+  TL: {
+    search: "Maghanap ng tao o transaksyon", settings: "Mga setting", officer: "Opisyal ng compliance",
+    nav: { Overview: "Pangkalahatan", Transactions: "Mga transaksyon", Brokers: "Mga broker", Customers: "Mga customer", Compliance: "Compliance", Reports: "Mga ulat" },
+    welcome: {
+      Overview: ["MIYERKULES, HULYO 29", "Magandang umaga, Yousef.", "Narito ang mga kailangang tutukan sa iyong network."],
+      Transactions: ["LIGTAS NA TRANSFER LEDGER", "Mga transaksyon", "Hanapin, salain, at suriin ang bawat transfer."],
+      Brokers: ["PINAGKAKATIWALAANG BROKER NETWORK", "Broker settlement", "Subaybayan ang mga broker, liquidity, at obligasyon."],
+      Customers: ["PAGSUSURI NG CUSTOMER", "Mga rekord ng customer", "Mag-onboard at subaybayan ang identity verification."],
+      Compliance: ["PAMAMAHALA NG AML CASE", "Pagsusuri sa compliance", "Imbestigahan ang alert at idokumento ang desisyon."],
+      Reports: ["REGULATORY INTELLIGENCE", "Sentro ng pag-uulat", "Subaybayan ang remittance at ihanda ang ebidensya."],
+      Settings: ["PANGANGASIWA NG PLATFORM", "Mga setting ng compliance", "I-configure ang screening, access, at integrations."],
+    },
+  },
+} as const;
+
+type Language = keyof typeof translations;
+
 const brokers = [
   { name: "Al Noor Exchange", city: "Amman", code: "BR-JO-014", corridor: "Egypt", balance: 18420, position: 3260, status: "Active", initials: "AN" },
   { name: "Cairo Trust Remit", city: "Cairo", code: "BR-EG-032", corridor: "Jordan", balance: 12780, position: -3260, status: "Active", initials: "CT" },
@@ -125,7 +182,7 @@ function toDashboardTransaction(transfer: StoredTransfer): Transaction {
 
 export default function Home() {
   const [active, setActive] = useState("Overview");
-  const [language, setLanguage] = useState("EN");
+  const [language, setLanguage] = useState<Language>("EN");
   const [showTransfer, setShowTransfer] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [showStr, setShowStr] = useState(false);
@@ -183,6 +240,8 @@ export default function Home() {
   }, []);
 
   const selectedCase = cases.find((item) => item.reference === selectedCaseReference) || cases[0];
+  const ui = translations[language];
+  const localizedWelcome = ui.welcome[active as keyof typeof ui.welcome] || ui.welcome.Overview;
 
   const reportVolume = useMemo(
     () => transactions.reduce((total, item) => total + Number(item.amount.replace(/[^0-9]/g, "")), 0),
@@ -323,7 +382,7 @@ export default function Home() {
   }
 
   return (
-    <main className="app-shell">
+    <main className="app-shell" dir={language === "AR" || language === "UR" ? "rtl" : "ltr"}>
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark" aria-hidden="true">
@@ -346,7 +405,7 @@ export default function Home() {
               <span className="nav-icon" aria-hidden="true">
                 {["⌂", "⇄", "◉", "◎", "◇", "▤"][index]}
               </span>
-              {item}
+              {ui.nav[item as keyof typeof ui.nav]}
               {item === "Compliance" && <em>3</em>}
             </button>
           ))}
@@ -361,13 +420,13 @@ export default function Home() {
             </div>
           </div>
           <button className={active === "Settings" ? "nav-item settings active" : "nav-item settings"} onClick={() => setActive("Settings")}>
-            <span className="nav-icon">⚙</span> Settings
+            <span className="nav-icon">⚙</span> {ui.settings}
           </button>
           <div className="user-card">
             <div className="avatar dark">YK</div>
             <div>
               <strong>Yousef Khoury</strong>
-              <small>Compliance officer</small>
+              <small>{ui.officer}</small>
             </div>
             <span>⌄</span>
           </div>
@@ -382,19 +441,18 @@ export default function Home() {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search people or transactions"
-              aria-label="Search people or transactions"
+              placeholder={ui.search}
+              aria-label={ui.search}
             />
             <kbd>⌘ K</kbd>
           </label>
           <div className="top-actions">
-            <button
-              className="language"
-              onClick={() => setLanguage(language === "EN" ? "AR" : "EN")}
-              aria-label="Change language"
-            >
-              {language}⌄
-            </button>
+            <select className="language" value={language} onChange={(event) => setLanguage(event.target.value as Language)} aria-label="Change language">
+              <option value="EN">English</option>
+              <option value="AR">العربية</option>
+              <option value="UR">اردو</option>
+              <option value="TL">Tagalog</option>
+            </select>
             <button className="notification" aria-label="Notifications">
               ♢<span />
             </button>
@@ -404,9 +462,9 @@ export default function Home() {
         <div className="content">
           <div className="welcome">
             <div>
-              <p className="eyebrow">{active === "Settings" ? "PLATFORM ADMINISTRATION" : active === "Brokers" ? "TRUSTED BROKER NETWORK" : active === "Transactions" ? "SECURE TRANSFER LEDGER" : active === "Customers" ? "CUSTOMER DUE DILIGENCE" : active === "Compliance" ? "AML CASE MANAGEMENT" : active === "Reports" ? "REGULATORY INTELLIGENCE" : "WEDNESDAY, 29 JULY"}</p>
-              <h1>{active === "Settings" ? "Compliance settings" : active === "Brokers" ? "Broker settlement" : active === "Transactions" ? "Transactions" : active === "Customers" ? "Customer records" : active === "Compliance" ? "Compliance review" : active === "Reports" ? "Reporting center" : "Good morning, Yousef."}</h1>
-              <p>{active === "Settings" ? "Configure screening policy, access controls, and regulatory integrations." : active === "Brokers" ? "Monitor registered brokers, liquidity, and net corridor obligations." : active === "Transactions" ? "Search, filter, and review every recorded transfer." : active === "Customers" ? "Onboard customers and monitor identity-verification status." : active === "Compliance" ? "Investigate alerts, document reasoning, and record accountable decisions." : active === "Reports" ? "Monitor remittance exposure and prepare regulator-ready evidence." : "Here’s what needs your attention across your network."}</p>
+              <p className="eyebrow">{localizedWelcome[0]}</p>
+              <h1>{localizedWelcome[1]}</h1>
+              <p>{localizedWelcome[2]}</p>
             </div>
             {active !== "Compliance" && active !== "Brokers" && active !== "Settings" && <button className="primary" onClick={() => active === "Reports" ? exportRegulatoryCsv() : active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
               <span>{active === "Reports" ? "↓" : "＋"}</span> {active === "Reports" ? "Export CSV" : active === "Customers" ? "Add customer" : "New transfer"}
