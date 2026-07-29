@@ -36,6 +36,20 @@ type Customer = {
   createdAt: string;
 };
 
+type ComplianceCase = {
+  reference: string;
+  transferReference: string;
+  customerName: string;
+  caseType: string;
+  severity: "Low" | "Medium" | "High";
+  status: "Open" | "Cleared" | "Escalated";
+  riskScore: number;
+  reasons: string;
+  note: string;
+  assignedToEmail: string;
+  createdAt: string;
+};
+
 const seededTransactions: Transaction[] = [
   {
     id: "HW-28491",
@@ -114,6 +128,9 @@ export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>(seededTransactions);
   const [ledgerMessage, setLedgerMessage] = useState("");
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [cases, setCases] = useState<ComplianceCase[]>([]);
+  const [selectedCaseReference, setSelectedCaseReference] = useState("");
+  const [caseNote, setCaseNote] = useState("");
 
   useEffect(() => {
     async function loadTransfers() {
@@ -128,6 +145,25 @@ export default function Home() {
     }
     void loadTransfers();
   }, []);
+
+  useEffect(() => {
+    async function loadCases() {
+      try {
+        const response = await fetch("/api/cases");
+        const payload = (await response.json()) as { cases?: ComplianceCase[] };
+        if (response.ok) {
+          const loadedCases = payload.cases || [];
+          setCases(loadedCases);
+          setSelectedCaseReference((current) => current || loadedCases[0]?.reference || "");
+        }
+      } catch {
+        // The compliance workspace remains available while reconnecting.
+      }
+    }
+    void loadCases();
+  }, []);
+
+  const selectedCase = cases.find((item) => item.reference === selectedCaseReference) || cases[0];
 
   useEffect(() => {
     async function loadCustomers() {
@@ -206,6 +242,27 @@ export default function Home() {
     } catch (error) {
       setLedgerMessage(error instanceof Error ? error.message : "Unable to onboard customer.");
       setShowCustomer(false);
+    }
+  }
+
+  async function decideCase(status: "Cleared" | "Escalated") {
+    if (!selectedCase || !caseNote.trim()) {
+      setLedgerMessage("Add a review note before deciding the case.");
+      return;
+    }
+    try {
+      const response = await fetch("/api/cases", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ reference: selectedCase.reference, status, note: caseNote }),
+      });
+      const payload = (await response.json()) as { case?: ComplianceCase; error?: string };
+      if (!response.ok || !payload.case) throw new Error(payload.error || "Unable to update case.");
+      setCases((current) => current.map((item) => item.reference === payload.case!.reference ? payload.case! : item));
+      setCaseNote("");
+      setLedgerMessage("");
+    } catch (error) {
+      setLedgerMessage(error instanceof Error ? error.message : "Unable to update case.");
     }
   }
 
@@ -291,13 +348,13 @@ export default function Home() {
         <div className="content">
           <div className="welcome">
             <div>
-              <p className="eyebrow">{active === "Customers" ? "CUSTOMER DUE DILIGENCE" : "WEDNESDAY, 29 JULY"}</p>
-              <h1>{active === "Customers" ? "Customer records" : "Good morning, Yousef."}</h1>
-              <p>{active === "Customers" ? "Onboard customers and monitor identity-verification status." : "Here’s what needs your attention across your network."}</p>
+              <p className="eyebrow">{active === "Customers" ? "CUSTOMER DUE DILIGENCE" : active === "Compliance" ? "AML CASE MANAGEMENT" : "WEDNESDAY, 29 JULY"}</p>
+              <h1>{active === "Customers" ? "Customer records" : active === "Compliance" ? "Compliance review" : "Good morning, Yousef."}</h1>
+              <p>{active === "Customers" ? "Onboard customers and monitor identity-verification status." : active === "Compliance" ? "Investigate alerts, document reasoning, and record accountable decisions." : "Here’s what needs your attention across your network."}</p>
             </div>
-            <button className="primary" onClick={() => active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
+            {active !== "Compliance" && <button className="primary" onClick={() => active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
               <span>＋</span> {active === "Customers" ? "Add customer" : "New transfer"}
-            </button>
+            </button>}
           </div>
 
           {ledgerMessage && <div className="ledger-message" role="status">{ledgerMessage}</div>}
@@ -333,6 +390,38 @@ export default function Home() {
                   {customers.length === 0 && <div className="empty customer-empty"><span>◎</span><strong>No customer records yet</strong><p>Add the first customer to demonstrate the complete KYC onboarding flow.</p><button className="primary" onClick={() => setShowCustomer(true)}>Add first customer</button></div>}
                 </div>
               </article>
+            </section>
+          ) : active === "Compliance" ? (
+            <section className="compliance-workspace">
+              <div className="case-summary">
+                <article><span>Open cases</span><strong>{cases.filter((item) => item.status === "Open").length}</strong><small>Awaiting analyst decision</small></article>
+                <article><span>Escalated</span><strong>{cases.filter((item) => item.status === "Escalated").length}</strong><small>Enhanced review required</small></article>
+                <article><span>Cleared</span><strong>{cases.filter((item) => item.status === "Cleared").length}</strong><small>Decision trail complete</small></article>
+              </div>
+              <div className="case-layout">
+                <article className="panel case-queue">
+                  <div className="panel-heading"><div><h2>Case queue</h2><p>Prioritized by severity and age</p></div></div>
+                  {cases.map((item) => (
+                    <button key={item.reference} className={selectedCase?.reference === item.reference ? "case-row selected" : "case-row"} onClick={() => { setSelectedCaseReference(item.reference); setCaseNote(""); }}>
+                      <span className={`case-severity ${item.severity.toLowerCase()}`}>{item.riskScore}</span>
+                      <span><strong>{item.caseType}</strong><small>{item.customerName} · {item.transferReference}</small></span>
+                      <em className={`case-status ${item.status.toLowerCase()}`}>{item.status}</em>
+                    </button>
+                  ))}
+                  {cases.length === 0 && <div className="empty">No compliance cases are waiting.</div>}
+                </article>
+                <article className="panel case-detail">
+                  {selectedCase ? <>
+                    <div className="case-detail-head">
+                      <div><span className="eyebrow">{selectedCase.reference} · {selectedCase.severity.toUpperCase()} RISK</span><h2>{selectedCase.caseType}</h2><p>{selectedCase.customerName} · {selectedCase.transferReference}</p></div>
+                      <div className={`score-chip ${selectedCase.severity.toLowerCase()}`}><strong>{selectedCase.riskScore}</strong><small>/100</small></div>
+                    </div>
+                    <div className="case-section"><h3>Explainable triggers</h3>{JSON.parse(selectedCase.reasons).map((reason: string, index: number) => <div className="case-reason" key={reason}><span>{String(index + 1).padStart(2, "0")}</span><p>{reason}</p></div>)}</div>
+                    <div className="case-section timeline"><h3>Case timeline</h3><div><span>✓</span><p><strong>Alert created</strong><small>{new Date(selectedCase.createdAt).toLocaleString("en-GB")}</small></p></div>{selectedCase.status !== "Open" && <div><span>✓</span><p><strong>{selectedCase.status} by analyst</strong><small>{selectedCase.assignedToEmail}</small></p></div>}</div>
+                    {selectedCase.status === "Open" ? <div className="case-decision"><label>Investigation note<textarea value={caseNote} onChange={(event) => setCaseNote(event.target.value)} placeholder="Document evidence reviewed and the reason for your decision…" /></label><div><button className="secondary" onClick={() => decideCase("Escalated")}>Escalate case</button><button className="primary" onClick={() => decideCase("Cleared")}>Clear with note</button></div></div> : <div className="decision-record"><span>✓</span><div><strong>Decision recorded: {selectedCase.status}</strong><p>{selectedCase.note}</p></div></div>}
+                  </> : <div className="empty">Select a case to begin the review.</div>}
+                </article>
+              </div>
             </section>
           ) : (<>
           <section className="metrics" aria-label="Key metrics">

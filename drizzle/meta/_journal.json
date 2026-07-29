@@ -22,6 +22,13 @@
       "when": 1785352244178,
       "tag": "0002_motionless_sabra",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1785352616690,
+      "tag": "0003_conscious_blink",
+      "breakpoints": true
     }
   ]
 }
