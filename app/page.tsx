@@ -97,7 +97,14 @@ const seededTransactions: Transaction[] = [
   },
 ];
 
-const nav = ["Overview", "Transactions", "Customers", "Compliance", "Reports"];
+const nav = ["Overview", "Transactions", "Brokers", "Customers", "Compliance", "Reports"];
+
+const brokers = [
+  { name: "Al Noor Exchange", city: "Amman", code: "BR-JO-014", corridor: "Egypt", balance: 18420, position: 3260, status: "Active", initials: "AN" },
+  { name: "Cairo Trust Remit", city: "Cairo", code: "BR-EG-032", corridor: "Jordan", balance: 12780, position: -3260, status: "Active", initials: "CT" },
+  { name: "PakLink Services", city: "Lahore", code: "BR-PK-008", corridor: "Jordan", balance: 24400, position: -4850, status: "Active", initials: "PS" },
+  { name: "Bayan Remittance", city: "Amman", code: "BR-JO-021", corridor: "Philippines", balance: 9650, position: 680, status: "Review", initials: "BR" },
+];
 
 function toDashboardTransaction(transfer: StoredTransfer): Transaction {
   return {
@@ -127,6 +134,7 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [riskFilter, setRiskFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [settlementRun, setSettlementRun] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>(seededTransactions);
   const [ledgerMessage, setLedgerMessage] = useState("");
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -327,7 +335,7 @@ export default function Home() {
               onClick={() => setActive(item)}
             >
               <span className="nav-icon" aria-hidden="true">
-                {["⌂", "⇄", "◎", "◇", "▤"][index]}
+                {["⌂", "⇄", "◉", "◎", "◇", "▤"][index]}
               </span>
               {item}
               {item === "Compliance" && <em>3</em>}
@@ -387,18 +395,62 @@ export default function Home() {
         <div className="content">
           <div className="welcome">
             <div>
-              <p className="eyebrow">{active === "Transactions" ? "SECURE TRANSFER LEDGER" : active === "Customers" ? "CUSTOMER DUE DILIGENCE" : active === "Compliance" ? "AML CASE MANAGEMENT" : active === "Reports" ? "REGULATORY INTELLIGENCE" : "WEDNESDAY, 29 JULY"}</p>
-              <h1>{active === "Transactions" ? "Transactions" : active === "Customers" ? "Customer records" : active === "Compliance" ? "Compliance review" : active === "Reports" ? "Reporting center" : "Good morning, Yousef."}</h1>
-              <p>{active === "Transactions" ? "Search, filter, and review every recorded transfer." : active === "Customers" ? "Onboard customers and monitor identity-verification status." : active === "Compliance" ? "Investigate alerts, document reasoning, and record accountable decisions." : active === "Reports" ? "Monitor remittance exposure and prepare regulator-ready evidence." : "Here’s what needs your attention across your network."}</p>
+              <p className="eyebrow">{active === "Brokers" ? "TRUSTED BROKER NETWORK" : active === "Transactions" ? "SECURE TRANSFER LEDGER" : active === "Customers" ? "CUSTOMER DUE DILIGENCE" : active === "Compliance" ? "AML CASE MANAGEMENT" : active === "Reports" ? "REGULATORY INTELLIGENCE" : "WEDNESDAY, 29 JULY"}</p>
+              <h1>{active === "Brokers" ? "Broker settlement" : active === "Transactions" ? "Transactions" : active === "Customers" ? "Customer records" : active === "Compliance" ? "Compliance review" : active === "Reports" ? "Reporting center" : "Good morning, Yousef."}</h1>
+              <p>{active === "Brokers" ? "Monitor registered brokers, liquidity, and net corridor obligations." : active === "Transactions" ? "Search, filter, and review every recorded transfer." : active === "Customers" ? "Onboard customers and monitor identity-verification status." : active === "Compliance" ? "Investigate alerts, document reasoning, and record accountable decisions." : active === "Reports" ? "Monitor remittance exposure and prepare regulator-ready evidence." : "Here’s what needs your attention across your network."}</p>
             </div>
-            {active !== "Compliance" && <button className="primary" onClick={() => active === "Reports" ? exportRegulatoryCsv() : active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
+            {active !== "Compliance" && active !== "Brokers" && <button className="primary" onClick={() => active === "Reports" ? exportRegulatoryCsv() : active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
               <span>{active === "Reports" ? "↓" : "＋"}</span> {active === "Reports" ? "Export CSV" : active === "Customers" ? "Add customer" : "New transfer"}
             </button>}
           </div>
 
           {ledgerMessage && <div className="ledger-message" role="status">{ledgerMessage}</div>}
 
-          {active === "Transactions" ? (
+          {active === "Brokers" ? (
+            <section className="broker-workspace">
+              <div className="broker-summary">
+                <article><span>Registered brokers</span><strong>{brokers.length}</strong><small>Across three countries</small></article>
+                <article><span>Network liquidity</span><strong>JOD {brokers.reduce((total, broker) => total + broker.balance, 0).toLocaleString("en-US")}</strong><small>Available prefunded balance</small></article>
+                <article><span>Settlement exposure</span><strong>JOD 8,790</strong><small>Gross obligations before netting</small></article>
+                <article><span>Net settlement</span><strong>JOD 4,850</strong><small>45% reduction after netting</small></article>
+              </div>
+              <div className="broker-grid">
+                <article className="panel broker-directory">
+                  <div className="panel-heading"><div><h2>Registered broker network</h2><p>Licensed participants and live liquidity positions</p></div><span className="data-protection">Identity verified</span></div>
+                  <div className="broker-list">
+                    {brokers.map((broker) => (
+                      <div className="broker-row" key={broker.code}>
+                        <span className="broker-avatar">{broker.initials}</span>
+                        <div><strong>{broker.name}</strong><small>{broker.code} · {broker.city}</small></div>
+                        <div><span>Prefunded balance</span><strong>JOD {broker.balance.toLocaleString("en-US")}</strong></div>
+                        <div><span>Net position</span><strong className={broker.position < 0 ? "negative-position" : "positive-position"}>{broker.position < 0 ? "−" : "+"} JOD {Math.abs(broker.position).toLocaleString("en-US")}</strong></div>
+                        <em className={`broker-status ${broker.status.toLowerCase()}`}>{broker.status}</em>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+                <article className="panel settlement-panel">
+                  <div className="panel-heading"><div><h2>Settlement cycle</h2><p>Current multilateral netting window</p></div></div>
+                  <div className={`settlement-state ${settlementRun ? "settled" : ""}`}>
+                    <span>{settlementRun ? "✓" : "⇄"}</span>
+                    <strong>{settlementRun ? "Cycle settled" : "Ready to settle"}</strong>
+                    <p>{settlementRun ? "Positions were netted and the audit proof was recorded." : "Four broker positions have passed balance and compliance checks."}</p>
+                  </div>
+                  <div className="settlement-flow">
+                    <div><span>Gross obligations</span><strong>JOD 8,790</strong></div>
+                    <i>→</i>
+                    <div><span>Net payable</span><strong>JOD 4,850</strong></div>
+                  </div>
+                  <div className="settlement-checks"><span>✓ Broker identities verified</span><span>✓ Sufficient prefunding confirmed</span><span>✓ Transaction batch AML screened</span></div>
+                  <button className="primary full" disabled={settlementRun} onClick={() => setSettlementRun(true)}>{settlementRun ? "Settlement complete" : "Run net settlement"}</button>
+                </article>
+              </div>
+              <article className="panel corridor-positions">
+                <div className="panel-heading"><div><h2>Corridor positions</h2><p>Obligations to be settled between registered counterparties</p></div><span className="report-ready">Live balances</span></div>
+                <div className="position-rail"><div><strong>Jordan → Egypt</strong><span>Al Noor Exchange</span><i /><b>JOD 3,260</b><span>Cairo Trust Remit</span></div><div><strong>Jordan → Pakistan</strong><span>Al Noor Exchange</span><i /><b>JOD 4,850</b><span>PakLink Services</span></div><div><strong>Jordan → Philippines</strong><span>Bayan Remittance</span><i /><b>JOD 680</b><span>Partner pending</span></div></div>
+              </article>
+            </section>
+          ) : active === "Transactions" ? (
             <section className="ledger-workspace">
               <div className="ledger-summary">
                 <article><span>Total transfers</span><strong>{transactions.length}</strong><small>Recorded in the secure ledger</small></article>
