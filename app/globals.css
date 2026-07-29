@@ -341,9 +341,12 @@ td small { display: block; color: #98a19e; font-size: 8px; margin-top: 3px; }
 .corridor-list > div:last-child { border-bottom: 0; }
 .corridor-list span, .risk-legend span, .evidence-grid span { color: var(--muted); font-size: 8px; }
 .risk-donut { width: 145px; aspect-ratio: 1; margin: 17px auto; border-radius: 50%; position: relative; background: conic-gradient(#2a8b70 0 var(--low), #d6a04a var(--low) calc(var(--low) + var(--medium)), #c14b53 calc(var(--low) + var(--medium)) 100%); }
-.risk-donut::after { position: absolute; inset: 28px; display: grid; place-items: center; border-radius: 50%; background: white; color: var(--ink); content: "Risk mix"; font-size: 9px; font-weight: 800; }
+.risk-donut > div { position: absolute; inset: 28px; z-index: 1; display: grid; place-content: center; gap: 3px; border-radius: 50%; background: white; color: var(--ink); text-align: center; }
+.risk-donut strong { display: block; font-family: Georgia, serif; font-size: 21px; font-weight: 500; line-height: 1; }
+.risk-donut small { color: var(--muted); font-size: 8px; }
 .risk-legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.risk-legend > div { display: flex; align-items: center; gap: 6px; }
+.risk-legend > span { display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; }
+.risk-legend strong { color: var(--ink); }
 .risk-legend i { width: 8px; height: 8px; border-radius: 50%; }
 .low-dot { background: #2a8b70; }
 .medium-dot { background: #d6a04a; }
