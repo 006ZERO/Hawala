@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, FormEvent, useEffect, useMemo, useState } from "react";
 
 type Transaction = {
   id: string;
@@ -165,6 +165,21 @@ export default function Home() {
 
   const selectedCase = cases.find((item) => item.reference === selectedCaseReference) || cases[0];
 
+  const reportVolume = useMemo(
+    () => transactions.reduce((total, item) => total + Number(item.amount.replace(/[^0-9]/g, "")), 0),
+    [transactions],
+  );
+  const corridorSummary = useMemo(() => {
+    const totals = new Map<string, { count: number; volume: number }>();
+    transactions.forEach((item) => {
+      const current = totals.get(item.corridor) || { count: 0, volume: 0 };
+      current.count += 1;
+      current.volume += Number(item.amount.replace(/[^0-9]/g, ""));
+      totals.set(item.corridor, current);
+    });
+    return Array.from(totals, ([corridor, values]) => ({ corridor, ...values })).sort((a, b) => b.volume - a.volume);
+  }, [transactions]);
+
   useEffect(() => {
     async function loadCustomers() {
       try {
@@ -266,6 +281,21 @@ export default function Home() {
     }
   }
 
+  function exportRegulatoryCsv() {
+    const escapeCell = (value: string) => `"${value.replace(/"/g, '""')}"`;
+    const rows = [
+      ["Transaction reference", "Customer", "Corridor", "Amount", "Risk", "Status"],
+      ...transactions.map((item) => [item.id, item.customer, item.corridor, item.amount, item.risk, item.status]),
+    ];
+    const csv = rows.map((row) => row.map((cell) => escapeCell(String(cell))).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "hawala-regulatory-transactions.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <main className="app-shell">
       <aside className="sidebar">
@@ -348,12 +378,12 @@ export default function Home() {
         <div className="content">
           <div className="welcome">
             <div>
-              <p className="eyebrow">{active === "Customers" ? "CUSTOMER DUE DILIGENCE" : active === "Compliance" ? "AML CASE MANAGEMENT" : "WEDNESDAY, 29 JULY"}</p>
-              <h1>{active === "Customers" ? "Customer records" : active === "Compliance" ? "Compliance review" : "Good morning, Yousef."}</h1>
-              <p>{active === "Customers" ? "Onboard customers and monitor identity-verification status." : active === "Compliance" ? "Investigate alerts, document reasoning, and record accountable decisions." : "Here’s what needs your attention across your network."}</p>
+              <p className="eyebrow">{active === "Customers" ? "CUSTOMER DUE DILIGENCE" : active === "Compliance" ? "AML CASE MANAGEMENT" : active === "Reports" ? "REGULATORY INTELLIGENCE" : "WEDNESDAY, 29 JULY"}</p>
+              <h1>{active === "Customers" ? "Customer records" : active === "Compliance" ? "Compliance review" : active === "Reports" ? "Reporting center" : "Good morning, Yousef."}</h1>
+              <p>{active === "Customers" ? "Onboard customers and monitor identity-verification status." : active === "Compliance" ? "Investigate alerts, document reasoning, and record accountable decisions." : active === "Reports" ? "Monitor remittance exposure and prepare regulator-ready evidence." : "Here’s what needs your attention across your network."}</p>
             </div>
-            {active !== "Compliance" && <button className="primary" onClick={() => active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
-              <span>＋</span> {active === "Customers" ? "Add customer" : "New transfer"}
+            {active !== "Compliance" && <button className="primary" onClick={() => active === "Reports" ? exportRegulatoryCsv() : active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
+              <span>{active === "Reports" ? "↓" : "＋"}</span> {active === "Reports" ? "Export CSV" : active === "Customers" ? "Add customer" : "New transfer"}
             </button>}
           </div>
 
@@ -422,6 +452,34 @@ export default function Home() {
                   </> : <div className="empty">Select a case to begin the review.</div>}
                 </article>
               </div>
+            </section>
+          ) : active === "Reports" ? (
+            <section className="reports-workspace">
+              <div className="report-period"><div><span className="eyebrow">REPORTING PERIOD</span><strong>Current demonstration dataset</strong></div><span className="report-ready">✓ Evidence pack ready</span></div>
+              <div className="report-metrics">
+                <article><span>Recorded volume</span><strong>JOD {reportVolume.toLocaleString("en-US")}</strong><small>{transactions.length} ledger transactions</small></article>
+                <article><span>Customer population</span><strong>{customers.length}</strong><small>{customers.filter((customer) => customer.verificationStatus === "Verified").length} identities verified</small></article>
+                <article><span>High/medium risk</span><strong>{transactions.filter((item) => item.risk !== "Low").length}</strong><small>Transactions requiring oversight</small></article>
+                <article><span>Case closure rate</span><strong>{cases.length ? Math.round(cases.filter((item) => item.status !== "Open").length / cases.length * 100) : 0}%</strong><small>{cases.filter((item) => item.status !== "Open").length} of {cases.length} cases decided</small></article>
+              </div>
+              <div className="report-grid">
+                <article className="panel corridor-report">
+                  <div className="panel-heading"><div><h2>Corridor exposure</h2><p>Recorded volume by destination corridor</p></div></div>
+                  <div className="corridor-list">
+                    {corridorSummary.map((item) => <div key={item.corridor}><div><strong>{item.corridor}</strong><small>{item.count} transfers · JOD {item.volume.toLocaleString("en-US")}</small></div><span><i style={{ width: `${reportVolume ? Math.max(8, item.volume / reportVolume * 100) : 8}%` }} /></span></div>)}
+                    {corridorSummary.length === 0 && <div className="empty">No corridor data recorded yet.</div>}
+                  </div>
+                </article>
+                <article className="panel risk-report">
+                  <div className="panel-heading"><div><h2>Risk distribution</h2><p>Transaction monitoring outcomes</p></div></div>
+                  <div className="risk-donut" style={{ "--low": `${transactions.length ? transactions.filter((item) => item.risk === "Low").length / transactions.length * 100 : 0}%`, "--medium": `${transactions.length ? transactions.filter((item) => item.risk === "Medium").length / transactions.length * 100 : 0}%` } as CSSProperties}><div><strong>{transactions.length}</strong><small>screened</small></div></div>
+                  <div className="risk-legend"><span><i className="low-dot" />Low <strong>{transactions.filter((item) => item.risk === "Low").length}</strong></span><span><i className="medium-dot" />Medium <strong>{transactions.filter((item) => item.risk === "Medium").length}</strong></span><span><i className="high-dot" />High <strong>{transactions.filter((item) => item.risk === "High").length}</strong></span></div>
+                </article>
+              </div>
+              <article className="panel evidence-register">
+                <div className="panel-heading"><div><h2>Regulatory evidence register</h2><p>Data available for supervisory review</p></div><span className="data-protection">Audit attributed</span></div>
+                <div className="evidence-grid"><div><span>✓</span><p><strong>Transaction ledger</strong><small>Sender, corridor, value, risk, and disposition</small></p></div><div><span>✓</span><p><strong>KYC register</strong><small>Identity status with minimized document data</small></p></div><div><span>✓</span><p><strong>Case decisions</strong><small>Triggers, analyst notes, outcomes, and attribution</small></p></div><div><span>✓</span><p><strong>Corridor summary</strong><small>Aggregate volume and transaction counts</small></p></div></div>
+              </article>
             </section>
           ) : (<>
           <section className="metrics" aria-label="Key metrics">
