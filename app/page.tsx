@@ -187,6 +187,7 @@ export default function Home() {
   const [showAlert, setShowAlert] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationsRead, setNotificationsRead] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [showStr, setShowStr] = useState(false);
   const [strSubmitted, setStrSubmitted] = useState(false);
   const [showCustomer, setShowCustomer] = useState(false);
@@ -594,7 +595,7 @@ export default function Home() {
                           <td><strong>{item.amount}</strong></td>
                           <td><span className={`risk ${item.risk.toLowerCase()}`}>● {item.risk}</span></td>
                           <td><span className={`status ${item.status.toLowerCase()}`}>{item.status === "Cleared" ? "✓" : "▷"} {item.status}</span></td>
-                          <td>{item.status === "Review" ? <button className="table-action" onClick={() => setShowAlert(true)}>Review</button> : <span className="ledger-complete">Complete</span>}</td>
+                          <td><button className="table-action" onClick={() => setSelectedTransaction(item)}>{item.status === "Review" ? "Review" : "Details"}</button></td>
                         </tr>
                       ))}
                     </tbody>
@@ -832,7 +833,7 @@ export default function Home() {
                 </thead>
                 <tbody>
                   {filtered.slice(0, 4).map((item) => (
-                    <tr key={item.id} onClick={() => item.status === "Review" && setShowAlert(true)}>
+                    <tr key={item.id} onClick={() => setSelectedTransaction(item)}>
                       <td>
                         <div className="customer">
                           <span className={`avatar ${item.tone}`}>{item.initials}</span>
@@ -892,6 +893,35 @@ export default function Home() {
                 <button className="primary full" type="submit">Approve and record transfer</button>
               </form>
             )}
+          </section>
+        </div>
+      )}
+
+      {selectedTransaction && (
+        <div className="modal-backdrop" onMouseDown={() => setSelectedTransaction(null)}>
+          <section className="modal transaction-detail-modal" onMouseDown={(event) => event.stopPropagation()} aria-modal="true" role="dialog" aria-labelledby="transaction-detail-title">
+            <div className="modal-header">
+              <div><span className="eyebrow">TRANSFER AUDIT RECORD · {selectedTransaction.id}</span><h2 id="transaction-detail-title">Transaction details</h2></div>
+              <button onClick={() => setSelectedTransaction(null)} aria-label="Close">×</button>
+            </div>
+            <div className="transaction-hero">
+              <div><span>Transfer amount</span><strong>{selectedTransaction.amount}</strong><small>{selectedTransaction.corridor}</small></div>
+              <span className={`status ${selectedTransaction.status.toLowerCase()}`}>{selectedTransaction.status === "Cleared" ? "✓" : "▷"} {selectedTransaction.status}</span>
+            </div>
+            <div className="transaction-facts">
+              <div><span>Sender</span><strong>{selectedTransaction.customer}</strong><small>Identity verified · Customer record linked</small></div>
+              <div><span>Initiated</span><strong>29 July 2026 · {selectedTransaction.time}</strong><small>Amman branch · Registered operator</small></div>
+              <div><span>Purpose</span><strong>Family support</strong><small>Customer-declared transfer purpose</small></div>
+              <div><span>Risk classification</span><strong>{selectedTransaction.risk} · {selectedTransaction.risk === "High" ? "82" : selectedTransaction.risk === "Medium" ? "54" : "12"}/100</strong><small>Explainable monitoring score</small></div>
+            </div>
+            <div className="screening-audit">
+              <h3>Automated compliance checks</h3>
+              <div><span>✓</span><p><strong>Sanctions screening</strong><small>No confirmed match across enabled lists</small></p><em>Passed</em></div>
+              <div><span>✓</span><p><strong>Identity and KYC</strong><small>Verified customer record attached</small></p><em>Passed</em></div>
+              <div className={selectedTransaction.status === "Review" ? "check-warning" : ""}><span>{selectedTransaction.status === "Review" ? "!" : "✓"}</span><p><strong>Behavioral monitoring</strong><small>{selectedTransaction.status === "Review" ? "Pattern requires analyst assessment" : "Activity is within the customer baseline"}</small></p><em>{selectedTransaction.status === "Review" ? "Review" : "Passed"}</em></div>
+            </div>
+            <div className="audit-proof"><span>◇</span><div><strong>Immutable audit proof</strong><p>Reference {selectedTransaction.id} · Screening policy v3.4 · Decision inputs retained for 7 years</p></div></div>
+            <div className="modal-actions"><button className="secondary" onClick={() => setSelectedTransaction(null)}>Close</button>{selectedTransaction.status === "Review" && <button className="primary" onClick={() => { setSelectedTransaction(null); setActive("Compliance"); }}>Open compliance case</button>}</div>
           </section>
         </div>
       )}
