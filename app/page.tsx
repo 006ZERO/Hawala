@@ -125,6 +125,8 @@ export default function Home() {
   const [created, setCreated] = useState(false);
   const [customerCreated, setCustomerCreated] = useState(false);
   const [query, setQuery] = useState("");
+  const [riskFilter, setRiskFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [transactions, setTransactions] = useState<Transaction[]>(seededTransactions);
   const [ledgerMessage, setLedgerMessage] = useState("");
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -200,7 +202,14 @@ export default function Home() {
           .toLowerCase()
           .includes(query.toLowerCase()),
       ),
-    [query],
+    [query, transactions],
+  );
+  const ledgerFiltered = useMemo(
+    () => filtered.filter((item) =>
+      (riskFilter === "All" || item.risk === riskFilter) &&
+      (statusFilter === "All" || item.status === statusFilter),
+    ),
+    [filtered, riskFilter, statusFilter],
   );
 
   async function submitTransfer(event: FormEvent<HTMLFormElement>) {
@@ -378,9 +387,9 @@ export default function Home() {
         <div className="content">
           <div className="welcome">
             <div>
-              <p className="eyebrow">{active === "Customers" ? "CUSTOMER DUE DILIGENCE" : active === "Compliance" ? "AML CASE MANAGEMENT" : active === "Reports" ? "REGULATORY INTELLIGENCE" : "WEDNESDAY, 29 JULY"}</p>
-              <h1>{active === "Customers" ? "Customer records" : active === "Compliance" ? "Compliance review" : active === "Reports" ? "Reporting center" : "Good morning, Yousef."}</h1>
-              <p>{active === "Customers" ? "Onboard customers and monitor identity-verification status." : active === "Compliance" ? "Investigate alerts, document reasoning, and record accountable decisions." : active === "Reports" ? "Monitor remittance exposure and prepare regulator-ready evidence." : "Here’s what needs your attention across your network."}</p>
+              <p className="eyebrow">{active === "Transactions" ? "SECURE TRANSFER LEDGER" : active === "Customers" ? "CUSTOMER DUE DILIGENCE" : active === "Compliance" ? "AML CASE MANAGEMENT" : active === "Reports" ? "REGULATORY INTELLIGENCE" : "WEDNESDAY, 29 JULY"}</p>
+              <h1>{active === "Transactions" ? "Transactions" : active === "Customers" ? "Customer records" : active === "Compliance" ? "Compliance review" : active === "Reports" ? "Reporting center" : "Good morning, Yousef."}</h1>
+              <p>{active === "Transactions" ? "Search, filter, and review every recorded transfer." : active === "Customers" ? "Onboard customers and monitor identity-verification status." : active === "Compliance" ? "Investigate alerts, document reasoning, and record accountable decisions." : active === "Reports" ? "Monitor remittance exposure and prepare regulator-ready evidence." : "Here’s what needs your attention across your network."}</p>
             </div>
             {active !== "Compliance" && <button className="primary" onClick={() => active === "Reports" ? exportRegulatoryCsv() : active === "Customers" ? setShowCustomer(true) : setShowTransfer(true)}>
               <span>{active === "Reports" ? "↓" : "＋"}</span> {active === "Reports" ? "Export CSV" : active === "Customers" ? "Add customer" : "New transfer"}
@@ -389,7 +398,46 @@ export default function Home() {
 
           {ledgerMessage && <div className="ledger-message" role="status">{ledgerMessage}</div>}
 
-          {active === "Customers" ? (
+          {active === "Transactions" ? (
+            <section className="ledger-workspace">
+              <div className="ledger-summary">
+                <article><span>Total transfers</span><strong>{transactions.length}</strong><small>Recorded in the secure ledger</small></article>
+                <article><span>Cleared</span><strong>{transactions.filter((item) => item.status === "Cleared").length}</strong><small>Passed automated screening</small></article>
+                <article><span>Under review</span><strong>{transactions.filter((item) => item.status === "Review").length}</strong><small>Requires analyst attention</small></article>
+                <article><span>Recorded value</span><strong>JOD {reportVolume.toLocaleString("en-US")}</strong><small>Across all active corridors</small></article>
+              </div>
+              <article className="panel ledger-directory">
+                <div className="panel-heading ledger-heading">
+                  <div><h2>Transfer ledger</h2><p>Complete transaction history across registered brokers</p></div>
+                  <button className="secondary" onClick={exportRegulatoryCsv}>↓ Export CSV</button>
+                </div>
+                <div className="ledger-filters" aria-label="Transaction filters">
+                  <label>Risk<select value={riskFilter} onChange={(event) => setRiskFilter(event.target.value)}><option>All</option><option>Low</option><option>Medium</option><option>High</option></select></label>
+                  <label>Status<select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option>All</option><option>Cleared</option><option>Review</option></select></label>
+                  <span>{ledgerFiltered.length} result{ledgerFiltered.length === 1 ? "" : "s"}</span>
+                </div>
+                <div className="table-wrap">
+                  <table>
+                    <thead><tr><th>Customer</th><th>Transaction</th><th>Corridor</th><th>Amount</th><th>Risk</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody>
+                      {ledgerFiltered.map((item) => (
+                        <tr key={item.id}>
+                          <td><div className="customer"><span className={`avatar ${item.tone}`}>{item.initials}</span><div><strong>{item.customer}</strong><small>Verified customer</small></div></div></td>
+                          <td><strong>{item.id}</strong><small>{item.time}</small></td>
+                          <td>{item.corridor}</td>
+                          <td><strong>{item.amount}</strong></td>
+                          <td><span className={`risk ${item.risk.toLowerCase()}`}>● {item.risk}</span></td>
+                          <td><span className={`status ${item.status.toLowerCase()}`}>{item.status === "Cleared" ? "✓" : "▷"} {item.status}</span></td>
+                          <td>{item.status === "Review" ? <button className="table-action" onClick={() => setShowAlert(true)}>Review</button> : <span className="ledger-complete">Complete</span>}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {ledgerFiltered.length === 0 && <div className="empty">No transactions match these filters.</div>}
+                </div>
+              </article>
+            </section>
+          ) : active === "Customers" ? (
             <section className="customers-workspace">
               <div className="customer-summary">
                 <article><span>Total customers</span><strong>{customers.length}</strong><small>Registered in the secure directory</small></article>
@@ -617,7 +665,7 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((item) => (
+                  {filtered.slice(0, 4).map((item) => (
                     <tr key={item.id} onClick={() => item.status === "Review" && setShowAlert(true)}>
                       <td>
                         <div className="customer">
