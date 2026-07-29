@@ -844,6 +844,16 @@ export default function Home() {
         </div>
       </section>
 
+      <nav className="mobile-nav" aria-label="Mobile navigation">
+        {[...nav, "Settings"].map((item, index) => (
+          <button key={item} className={active === item ? "active" : ""} onClick={() => setActive(item)}>
+            <span aria-hidden="true">{["⌂", "⇄", "◉", "◎", "◇", "▤", "⚙"][index]}</span>
+            <small>{item === "Settings" ? ui.settings : ui.nav[item as keyof typeof ui.nav]}</small>
+            {item === "Compliance" && <em>3</em>}
+          </button>
+        ))}
+      </nav>
+
       {showTransfer && (
         <div className="modal-backdrop" onMouseDown={() => setShowTransfer(false)}>
           <section className="modal transfer-modal" onMouseDown={(event) => event.stopPropagation()} aria-modal="true" role="dialog">
