@@ -154,14 +154,15 @@ const seededTransactions: Transaction[] = [
   },
 ];
 
-const nav = ["Overview", "Transactions", "Brokers", "Customers", "Compliance", "Reports", "Regulator"];
+const nav = ["Overview", "Pilot", "Transactions", "Brokers", "Customers", "Compliance", "Reports", "Regulator"];
 
 const translations = {
   EN: {
     search: "Search people or transactions", settings: "Settings", officer: "Compliance officer",
-    nav: { Overview: "Overview", Transactions: "Transactions", Brokers: "Brokers", Customers: "Customers", Compliance: "Compliance", Reports: "Reports", Regulator: "Regulator" },
+    nav: { Overview: "Overview", Pilot: "Jordan pilot", Transactions: "Transactions", Brokers: "Brokers", Customers: "Customers", Compliance: "Compliance", Reports: "Reports", Regulator: "Regulator" },
     welcome: {
       Overview: ["WEDNESDAY, 29 JULY", "Good morning, Yousef.", "Here’s what needs your attention across your network."],
+      Pilot: ["CONTROLLED MARKET ENTRY", "Jordan pilot command center", "Prove the operating model with one sponsor, one corridor, explicit caps, and measurable exit gates."],
       Transactions: ["SECURE TRANSFER LEDGER", "Transactions", "Search, filter, and review every recorded transfer."],
       Brokers: ["TRUSTED BROKER NETWORK", "Broker settlement", "Monitor registered brokers, liquidity, and net corridor obligations."],
       Customers: ["CUSTOMER DUE DILIGENCE", "Customer records", "Onboard customers and monitor identity-verification status."],
@@ -173,9 +174,10 @@ const translations = {
   },
   AR: {
     search: "ابحث عن أشخاص أو معاملات", settings: "الإعدادات", officer: "مسؤول الامتثال",
-    nav: { Overview: "نظرة عامة", Transactions: "المعاملات", Brokers: "الوكلاء", Customers: "العملاء", Compliance: "الامتثال", Reports: "التقارير", Regulator: "الجهة الرقابية" },
+    nav: { Overview: "نظرة عامة", Pilot: "التجربة الأردنية", Transactions: "المعاملات", Brokers: "الوكلاء", Customers: "العملاء", Compliance: "الامتثال", Reports: "التقارير", Regulator: "الجهة الرقابية" },
     welcome: {
       Overview: ["الأربعاء، 29 يوليو", "صباح الخير، يوسف.", "إليك ما يحتاج إلى اهتمامك عبر الشبكة."],
+      Pilot: ["دخول مضبوط إلى السوق", "مركز قيادة التجربة الأردنية", "إثبات نموذج التشغيل مع راعٍ واحد وممر واحد وحدود واضحة ومعايير خروج قابلة للقياس."],
       Transactions: ["سجل التحويلات الآمن", "المعاملات", "ابحث وصفِّ وراجع كل تحويل مسجل."],
       Brokers: ["شبكة الوكلاء الموثوقة", "تسوية الوكلاء", "راقب الوكلاء المسجلين والسيولة والالتزامات."],
       Customers: ["العناية الواجبة بالعملاء", "سجلات العملاء", "سجّل العملاء وتابع حالة التحقق من الهوية."],
@@ -588,6 +590,60 @@ const arabicUi: Record<string, string> = {
   "HIGH RISK · HW-28490": "مخاطر مرتفعة · HW-28490",
   "Customer C-1842 · 6 days": "العميل C-1842 · 6 أيام",
   "Today, 10:45 AM": "اليوم، 10:45 صباحاً",
+  "JORDAN · CONTROLLED PILOT": "الأردن · تجربة مضبوطة",
+  "Buyer-evaluable, regulator-aware, and deliberately bounded": "قابلة لتقييم المشتري ومراعية للرقابة ومحددة عمداً",
+  "This is a proposed operating design—not CBJ approval. Live customers, screening, funds movement, or regulatory submission start only after sponsor, legal, security, and authority gates are signed.": "هذا تصميم تشغيل مقترح وليس موافقة من البنك المركزي الأردني. لا يبدأ استخدام عملاء فعليين أو الفحص أو نقل الأموال أو الإرسال الرقابي إلا بعد اعتماد متطلبات الراعي والقانون والأمن والجهة الرقابية.",
+  "PROPOSED": "مقترح",
+  "Pilot cohort": "مجموعة التجربة",
+  "licensed or sponsor-approved brokers": "وكلاء مرخصون أو معتمدون من الراعي",
+  "Initial corridor": "الممر الأولي",
+  "final corridor subject to sponsor approval": "الممر النهائي خاضع لاعتماد الراعي",
+  "Shadow period": "فترة التشغيل الموازي",
+  "no autonomous decisions or funds movement": "لا قرارات آلية ولا نقل أموال",
+  "Transaction cap": "حد المعاملة",
+  "illustrative cap; buyer must approve": "حد توضيحي؛ يجب أن يعتمده المشتري",
+  "Production gates": "متطلبات الانتقال إلى الإنتاج",
+  "Every gate must be evidenced before controlled live use": "يجب إثبات كل متطلب قبل الاستخدام الفعلي المضبوط",
+  "0 of 6 approved": "0 من 6 معتمدة",
+  "Sponsor and legal perimeter": "الراعي والنطاق القانوني",
+  "JoRegBox or authority pathway": "مسار المختبر التنظيمي أو الجهة الرقابية",
+  "Screening data": "بيانات الفحص",
+  "Funds safeguarding": "حماية الأموال",
+  "Security acceptance": "اعتماد الأمن",
+  "Privacy and data schedule": "جدول الخصوصية والبيانات",
+  "Awaiting buyer": "بانتظار المشتري",
+  "External dependency": "اعتماد خارجي",
+  "Adapter ready": "المهايئ جاهز",
+  "Design only": "تصميم فقط",
+  "Not certified": "غير معتمد",
+  "Legal review": "مراجعة قانونية",
+  "Integration truth table": "جدول حقيقة التكاملات",
+  "Buyer-facing status with no implied connectivity": "حالة واضحة للمشتري دون إيحاء بوجود اتصال",
+  "Adapter contract": "عقد المهايئ",
+  "No provider credentials": "لا توجد بيانات اعتماد لمزود",
+  "Workflow defined": "سير العمل محدد",
+  "No verification vendor": "لا يوجد مزود تحقق",
+  "Reconciliation only": "مطابقة فقط",
+  "No funds move": "لا يتم نقل أموال",
+  "Draft preparation": "إعداد مسودة",
+  "No authority connection": "لا يوجد اتصال بجهة رقابية",
+  "Optional proof": "إثبات اختياري",
+  "Not required for settlement": "غير مطلوب للتسوية",
+  "Pilot success scorecard": "بطاقة نجاح التجربة",
+  "Baseline first; targets approved jointly with the buyer": "يحدد خط الأساس أولاً وتعتمد الأهداف بالاشتراك مع المشتري",
+  "Record completeness": "اكتمال السجلات",
+  "Attributed case decisions": "قرارات الحالات المنسوبة",
+  "Reconciliation exceptions assigned": "إسناد استثناءات المطابقة",
+  "False-positive rate": "معدل النتائج الإيجابية الكاذبة",
+  "Broker onboarding time": "زمن تسجيل الوكيل",
+  "Cost per recorded transfer": "تكلفة التحويل المسجل",
+  "Not measured": "لم يتم القياس",
+  "Demo ready": "العرض جاهز",
+  "No live model": "لا يوجد نموذج مباشر",
+  "Workflow ready": "سير العمل جاهز",
+  "No claim yet": "لا يوجد ادعاء بعد",
+  "12–18 week pathway": "مسار من 12 إلى 18 أسبوعاً",
+  "Milestone-based, with a stop/go decision at every phase": "مبني على مراحل مع قرار استمرار أو توقف في كل مرحلة",
 };
 
 const originalText = new WeakMap<Text, string>();
@@ -1182,6 +1238,62 @@ export default function Home() {
               </div>
               <div className="settings-footer"><div><strong>Changes require administrator authority</strong><span>Every configuration change is persisted, timestamped, and attributed.</span></div><button className="primary" onClick={savePlatformConfiguration}>Save configuration</button></div>
             </section>
+          ) : active === "Pilot" ? (
+            <section className="pilot-workspace">
+              <div className="pilot-banner">
+                <div><span>JORDAN · CONTROLLED PILOT</span><h2>Buyer-evaluable, regulator-aware, and deliberately bounded</h2><p>This is a proposed operating design—not CBJ approval. Live customers, screening, funds movement, or regulatory submission start only after sponsor, legal, security, and authority gates are signed.</p></div>
+                <em>PROPOSED</em>
+              </div>
+              <div className="pilot-metrics">
+                <article><span>Pilot cohort</span><strong>5–10</strong><small>licensed or sponsor-approved brokers</small></article>
+                <article><span>Initial corridor</span><strong>JO → EG</strong><small>final corridor subject to sponsor approval</small></article>
+                <article><span>Shadow period</span><strong>4–6 weeks</strong><small>no autonomous decisions or funds movement</small></article>
+                <article><span>Transaction cap</span><strong>JOD 1,000</strong><small>illustrative cap; buyer must approve</small></article>
+              </div>
+              <div className="pilot-grid">
+                <article className="panel pilot-gates">
+                  <div className="panel-heading"><div><h2>Production gates</h2><p>Every gate must be evidenced before controlled live use</p></div><span className="connection-demo">0 of 6 approved</span></div>
+                  {[
+                    ["Sponsor and legal perimeter", "Named CBJ-supervised sponsor, permitted activity, corridor, and accountable executive", "Awaiting buyer"],
+                    ["JoRegBox or authority pathway", "Written determination of sandbox, approval, notification, or licensed deployment route", "External dependency"],
+                    ["Screening data", "Contracted sanctions/PEP provider, update SLA, test evidence, and fallback procedure", "Adapter ready"],
+                    ["Funds safeguarding", "Approved prefunding account, payment rail, caps, reconciliation, and dispute ownership", "Design only"],
+                    ["Security acceptance", "IAM, MFA, keys, residency, penetration test, backup restore, and incident exercise", "Not certified"],
+                    ["Privacy and data schedule", "Purpose, lawful basis, minimization, retention, rights, transfers, and processors", "Legal review"],
+                  ].map(([title, detail, status]) => <div key={title}><span>○</span><p><strong>{title}</strong><small>{detail}</small></p><em>{status}</em></div>)}
+                </article>
+                <article className="panel pilot-integrations">
+                  <div className="panel-heading"><div><h2>Integration truth table</h2><p>Buyer-facing status with no implied connectivity</p></div></div>
+                  <dl>
+                    <div><dt>Sanctions / PEP</dt><dd><b>Adapter contract</b><span>No provider credentials</span></dd></div>
+                    <div><dt>Identity / KYB</dt><dd><b>Workflow defined</b><span>No verification vendor</span></dd></div>
+                    <div><dt>Payment rail</dt><dd><b>Reconciliation only</b><span>No funds move</span></dd></div>
+                    <div><dt>CBJ / AML reporting</dt><dd><b>Draft preparation</b><span>No authority connection</span></dd></div>
+                    <div><dt>Distributed ledger</dt><dd><b>Optional proof</b><span>Not required for settlement</span></dd></div>
+                  </dl>
+                </article>
+                <article className="panel pilot-scorecard">
+                  <div className="panel-heading"><div><h2>Pilot success scorecard</h2><p>Baseline first; targets approved jointly with the buyer</p></div></div>
+                  <div className="scorecard-table">
+                    <div><strong>Record completeness</strong><span>Target ≥95%</span><em>Not measured</em></div>
+                    <div><strong>Attributed case decisions</strong><span>Target 100%</span><em>Demo ready</em></div>
+                    <div><strong>Reconciliation exceptions assigned</strong><span>Target ≤1 business day</span><em>Not measured</em></div>
+                    <div><strong>False-positive rate</strong><span>Buyer baseline required</span><em>No live model</em></div>
+                    <div><strong>Broker onboarding time</strong><span>Measure median hours</span><em>Workflow ready</em></div>
+                    <div><strong>Cost per recorded transfer</strong><span>Measure fully loaded cost</span><em>No claim yet</em></div>
+                  </div>
+                </article>
+                <article className="panel pilot-timeline">
+                  <div className="panel-heading"><div><h2>12–18 week pathway</h2><p>Milestone-based, with a stop/go decision at every phase</p></div></div>
+                  <ol>
+                    <li><span>01</span><p><strong>Discovery · 2 weeks</strong><small>Legal perimeter, data map, sponsor, corridor, baseline</small></p></li>
+                    <li><span>02</span><p><strong>Configure · 3–4 weeks</strong><small>Sandbox, roles, policies, adapters, synthetic migration</small></p></li>
+                    <li><span>03</span><p><strong>Shadow · 4–6 weeks</strong><small>Parallel records and screening comparison; no funds move</small></p></li>
+                    <li><span>04</span><p><strong>Controlled live · 6–8 weeks</strong><small>Only with written approvals, caps, monitoring, and rollback</small></p></li>
+                  </ol>
+                </article>
+              </div>
+            </section>
           ) : active === "Brokers" ? (
             <section className="broker-workspace">
               <div className="broker-summary">
@@ -1555,7 +1667,7 @@ export default function Home() {
       <nav className="mobile-nav" aria-label="Mobile navigation">
         {[...nav, "Settings"].map((item, index) => (
           <button key={item} className={active === item ? "active" : ""} onClick={() => setActive(item)}>
-            <span aria-hidden="true">{["⌂", "⇄", "◉", "◎", "◇", "▤", "◈", "⚙"][index]}</span>
+            <span aria-hidden="true">{["⌂", "◆", "⇄", "◉", "◎", "◇", "▤", "◈", "⚙"][index]}</span>
             <small>{item === "Settings" ? ui.settings : ui.nav[item as keyof typeof ui.nav]}</small>
             {item === "Compliance" && <em>3</em>}
           </button>
