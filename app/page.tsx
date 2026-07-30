@@ -215,7 +215,7 @@ const translations = {
   },
 } as const;
 
-type Language = keyof typeof translations;
+type Language = "EN" | "AR";
 
 const arabicUi: Record<string, string> = {
   "DEMO ENVIRONMENT": "بيئة تجريبية",
@@ -1023,7 +1023,7 @@ export default function Home() {
   }
 
   return (
-    <main ref={shellRef} className="app-shell" lang={language === "AR" ? "ar" : language === "UR" ? "ur" : language === "TL" ? "fil" : "en"} dir={language === "AR" || language === "UR" ? "rtl" : "ltr"}>
+    <main ref={shellRef} className="app-shell" lang={language === "AR" ? "ar" : "en"} dir={language === "AR" ? "rtl" : "ltr"}>
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark" aria-hidden="true">
@@ -1092,8 +1092,6 @@ export default function Home() {
             <select className="language" value={language} onChange={(event) => setLanguage(event.target.value as Language)} aria-label="Change language">
               <option value="EN">English</option>
               <option value="AR">العربية</option>
-              <option value="UR">اردو</option>
-              <option value="TL">Tagalog</option>
             </select>
             <button className="notification" aria-label="Notifications" aria-expanded={showNotifications} onClick={() => setShowNotifications((current) => !current)}>
               ♢{!notificationsRead && <span />}
