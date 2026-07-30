@@ -167,6 +167,16 @@ const brokers = [
   { name: "Bayan Remittance", city: "Amman", code: "BR-JO-021", corridor: "Philippines", balance: 9650, position: 680, status: "Review", initials: "BR" },
 ];
 
+const demoJourney = [
+  { screen: "Overview", kicker: "01 · NETWORK SNAPSHOT", title: "See the formalized network", body: "Start with reconciled transaction volume, active corridors, and compliance attention items." },
+  { screen: "Customers", kicker: "02 · CUSTOMER DUE DILIGENCE", title: "Onboard a customer safely", body: "Capture the minimum identity data needed for verification and preserve an accountable KYC record." },
+  { screen: "Transactions", kicker: "03 · SCREENED TRANSFER", title: "Record and screen a remittance", body: "Create a transfer, inspect its risk outcome, and open the transaction-level audit record." },
+  { screen: "Compliance", kicker: "04 · HUMAN DECISION", title: "Investigate an explainable alert", body: "Review rule triggers, document evidence, and clear or escalate the case with analyst attribution." },
+  { screen: "Brokers", kicker: "05 · PRACTICAL SETTLEMENT", title: "Net broker obligations", body: "Review prefunding, liquidity coverage, reconciliation checks, and the optional ledger proof." },
+  { screen: "Regulator", kicker: "06 · SUPERVISORY VIEW", title: "Show privacy-safe oversight", body: "Central-bank buyers see aggregate corridors, entity health, and statutory reports without customer PII." },
+  { screen: "Reports", kicker: "07 · EVIDENCE HANDOFF", title: "Export a regulator-ready evidence pack", body: "Close with reconciled metrics, corridor exposure, case outcomes, and exportable evidence." },
+] as const;
+
 function toDashboardTransaction(transfer: StoredTransfer): Transaction {
   return {
     id: transfer.reference,
@@ -202,6 +212,7 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [settlementRun, setSettlementRun] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
+  const [demoStep, setDemoStep] = useState<number | null>(null);
   const [screeningRules, setScreeningRules] = useState({
     sanctions: true,
     pep: true,
@@ -251,6 +262,7 @@ export default function Home() {
   const selectedCase = cases.find((item) => item.reference === selectedCaseReference) || cases[0];
   const ui = translations[language];
   const localizedWelcome = ui.welcome[active as keyof typeof ui.welcome] || ui.welcome.Overview;
+  const currentDemoStep = demoStep === null ? null : demoJourney[demoStep];
 
   const reportVolume = useMemo(
     () => transactions.reduce((total, item) => total + Number(item.amount.replace(/[^0-9]/g, "")), 0),
@@ -456,6 +468,7 @@ export default function Home() {
             <kbd>⌘ K</kbd>
           </label>
           <div className="top-actions">
+            <button className="demo-launch" onClick={() => { setDemoStep(0); setActive("Overview"); }}>▶ Guided demo</button>
             <select className="language" value={language} onChange={(event) => setLanguage(event.target.value as Language)} aria-label="Change language">
               <option value="EN">English</option>
               <option value="AR">العربية</option>
@@ -487,6 +500,12 @@ export default function Home() {
             </button>}
           </div>
 
+          <div className="environment-banner" role="note">
+            <span>DEMO ENVIRONMENT</span>
+            <p>Synthetic data · Simulated screening and regulator connectors · No funds or statutory reports are transmitted</p>
+            <button onClick={() => setActive("Settings")}>Capability details</button>
+          </div>
+
           {ledgerMessage && <div className="ledger-message" role="status">{ledgerMessage}</div>}
 
           {active === "Settings" ? (
@@ -497,9 +516,9 @@ export default function Home() {
                   <div className="panel-heading"><div><h2>Automated screening</h2><p>Controls applied to every transfer in real time</p></div><span className="settings-badge">Policy v3.4</span></div>
                   <div className="setting-list">
                     {[
-                      ["sanctions", "Sanctions screening", "UN, OFAC, EU, and UK consolidated lists"],
-                      ["pep", "PEP screening", "Politically exposed persons and close associates"],
-                      ["adverseMedia", "Adverse media", "Negative-news signals from approved providers"],
+                      ["sanctions", "Sanctions screening", "Simulated list snapshot · Live provider connection required"],
+                      ["pep", "PEP screening", "Simulated PEP dataset · Licensed data source required"],
+                      ["adverseMedia", "Adverse media", "Disabled until an approved news-data provider is connected"],
                       ["velocity", "Velocity monitoring", "Detect structuring and unusual transaction bursts"],
                     ].map(([key, title, description]) => (
                       <div className="setting-row" key={key}>
@@ -510,9 +529,9 @@ export default function Home() {
                   </div>
                 </article>
                 <article className="panel settings-card">
-                  <div className="panel-heading"><div><h2>Regulatory connection</h2><p>Supervisory reporting destination</p></div><span className="connection-live">● Connected</span></div>
-                  <div className="regulator-profile"><span className="shield">✓</span><div><strong>Central Bank of Jordan</strong><small>Regulatory sandbox · EXC-2026-041</small></div></div>
-                  <dl className="connection-details"><div><dt>Reporting mode</dt><dd>Secure API submission</dd></div><div><dt>STR workflow</dt><dd>Analyst approval required</dd></div><div><dt>Last synchronization</dt><dd>Today, 10:45 AM</dd></div><div><dt>Data residency</dt><dd>Jordan region</dd></div></dl>
+                  <div className="panel-heading"><div><h2>Regulatory connection</h2><p>Target supervisory reporting profile</p></div><span className="connection-demo">Illustrative</span></div>
+                  <div className="regulator-profile"><span className="shield">◇</span><div><strong>Central Bank reporting profile</strong><small>Demo configuration · No live authority connection</small></div></div>
+                  <dl className="connection-details"><div><dt>Reporting mode</dt><dd>Simulated secure API</dd></div><div><dt>STR workflow</dt><dd>Human approval required</dd></div><div><dt>Last demonstration</dt><dd>Today, 10:45 AM</dd></div><div><dt>Production dependency</dt><dd>Authority onboarding</dd></div></dl>
                 </article>
                 <article className="panel settings-card">
                   <div className="panel-heading"><div><h2>Roles and approvals</h2><p>Separation of duties for sensitive actions</p></div></div>
@@ -553,15 +572,15 @@ export default function Home() {
                   <div className={`settlement-state ${settlementRun ? "settled" : ""}`}>
                     <span>{settlementRun ? "✓" : "⇄"}</span>
                     <strong>{settlementRun ? "Cycle settled" : "Ready to settle"}</strong>
-                    <p>{settlementRun ? "Positions were netted and the audit proof was recorded." : "Four broker positions have passed balance and compliance checks."}</p>
+                    <p>{settlementRun ? "Positions were netted and a simulated audit proof was recorded." : "Four illustrative broker positions passed balance and compliance checks."}</p>
                   </div>
                   <div className="settlement-flow">
                     <div><span>Gross obligations</span><strong>JOD 8,790</strong></div>
                     <i>→</i>
                     <div><span>Net payable</span><strong>JOD 4,850</strong></div>
                   </div>
-                  <div className="settlement-checks"><span>✓ Broker identities verified</span><span>✓ Sufficient prefunding confirmed</span><span>✓ Transaction batch AML screened</span></div>
-                  <button className="primary full" disabled={settlementRun} onClick={() => setSettlementRun(true)}>{settlementRun ? "Settlement complete" : "Run net settlement"}</button>
+                  <div className="settlement-checks"><span>✓ Demo broker identities verified</span><span>✓ Illustrative prefunding confirmed</span><span>✓ Synthetic transaction batch screened</span><span>◇ Optional distributed-ledger proof; not required for settlement</span></div>
+                  <button className="primary full" disabled={settlementRun} onClick={() => setSettlementRun(true)}>{settlementRun ? "Demo settlement complete" : "Simulate net settlement"}</button>
                 </article>
               </div>
               <article className="panel corridor-positions">
@@ -674,7 +693,7 @@ export default function Home() {
             </section>
           ) : active === "Regulator" ? (
             <section className="regulator-workspace">
-              <div className="supervisory-banner"><span className="shield">✓</span><div><strong>Privacy-preserving supervisory access</strong><p>Aggregate corridor and compliance data only. Customer names, identity documents, and broker credentials remain restricted.</p></div><em>Central Bank view</em></div>
+              <div className="supervisory-banner"><span className="shield">◇</span><div><strong>Illustrative privacy-preserving supervisory access</strong><p>Demonstration of aggregate corridor and compliance data. No live central-bank connection or statutory feed is active.</p></div><em>Demo regulator view</em></div>
               <div className="regulator-metrics">
                 <article><span>Formalized volume</span><strong>JOD {reportVolume.toLocaleString("en-US")}</strong><small>Previously informal flows now visible</small></article>
                 <article><span>Registered entities</span><strong>{brokers.length}</strong><small>{brokers.filter((broker) => broker.status === "Active").length} active reporting entities</small></article>
@@ -904,6 +923,27 @@ export default function Home() {
         ))}
       </nav>
 
+      {currentDemoStep && <aside className="demo-coach" aria-live="polite">
+        <div className="demo-progress">{demoJourney.map((_, index) => <i key={index} className={index <= demoStep! ? "complete" : ""} />)}</div>
+        <button className="demo-close" onClick={() => setDemoStep(null)} aria-label="Close guided demo">×</button>
+        <span>{currentDemoStep.kicker}</span>
+        <h2>{currentDemoStep.title}</h2>
+        <p>{currentDemoStep.body}</p>
+        <div>
+          <small>{demoStep! + 1} of {demoJourney.length}</small>
+          {demoStep! > 0 && <button className="secondary" onClick={() => { const previous = demoStep! - 1; setDemoStep(previous); setActive(demoJourney[previous].screen); }}>Back</button>}
+          <button className="primary" onClick={() => {
+            if (demoStep === demoJourney.length - 1) {
+              setDemoStep(null);
+              return;
+            }
+            const next = demoStep! + 1;
+            setDemoStep(next);
+            setActive(demoJourney[next].screen);
+          }}>{demoStep === demoJourney.length - 1 ? "Finish tour" : "Next step"}</button>
+        </div>
+      </aside>}
+
       {showTransfer && (
         <div className="modal-backdrop" onMouseDown={() => setShowTransfer(false)}>
           <section className="modal transfer-modal" onMouseDown={(event) => event.stopPropagation()} aria-modal="true" role="dialog">
@@ -927,7 +967,7 @@ export default function Home() {
                   <label>Amount (JOD)<input name="amount" required type="number" defaultValue="1240" min="1" /></label>
                 </div>
                 <label>Transfer purpose<select name="purpose" defaultValue="Family support"><option>Family support</option><option>Education</option><option>Medical expenses</option><option>Salary</option></select></label>
-                <div className="screening-result"><span>✓</span><div><strong>Screening complete</strong><p>No sanctions or PEP matches · Risk score 12/100</p></div></div>
+                <div className="screening-result"><span>◇</span><div><strong>Simulated screening complete</strong><p>Synthetic sanctions and PEP snapshot · Illustrative risk score 12/100</p></div></div>
                 <button className="primary full" type="submit">Approve and record transfer</button>
               </form>
             )}
@@ -1000,13 +1040,13 @@ export default function Home() {
               <div className="str-receipt">
                 <div>✓</div>
                 <h3>Report submitted securely</h3>
-                <p>The regulator acknowledged receipt of the filing.</p>
-                <dl><div><dt>Receipt</dt><dd>STR-JO-2026-00418</dd></div><div><dt>Submitted by</dt><dd>{selectedCase.assignedToEmail || "Current compliance officer"}</dd></div><div><dt>Status</dt><dd>Accepted for review</dd></div></dl>
+                <p>A simulated regulator connector acknowledged this demonstration filing. Nothing was transmitted externally.</p>
+                <dl><div><dt>Demo receipt</dt><dd>STR-DEMO-2026-00418</dd></div><div><dt>Approved by</dt><dd>{selectedCase.assignedToEmail || "Current compliance officer"}</dd></div><div><dt>Status</dt><dd>Simulated acceptance</dd></div></dl>
                 <button className="primary full" onClick={() => setShowStr(false)}>Return to case</button>
               </div>
             ) : (
               <>
-                <div className="str-notice"><span>◇</span><p><strong>Prefilled from the case evidence trail</strong>Review the report before encrypted submission to the financial intelligence unit.</p></div>
+                <div className="str-notice"><span>◇</span><p><strong>Human-approved filing preparation</strong>Prefilled from the case evidence trail. Production submission requires authority onboarding, credentials, and accountable analyst approval.</p></div>
                 <div className="str-fields">
                   <div><span>Reporting entity</span><strong>HAWALA Compliance OS · CBJ EXC-2026-041</strong></div>
                   <div><span>Case reference</span><strong>{selectedCase.reference}</strong></div>
@@ -1017,7 +1057,7 @@ export default function Home() {
                 </div>
                 <label className="str-narrative">Regulatory narrative<textarea defaultValue={`${selectedCase.customerName} was escalated following automated detection of ${selectedCase.caseType.toLowerCase()}. The transaction and related customer activity were reviewed against the recorded risk indicators. The reporting entity is submitting this report for supervisory assessment; no conclusion of criminal conduct has been made.`} /></label>
                 <div className="str-certification"><span>✓</span><p>I certify that this filing reflects the evidence available in the case record and is submitted in good faith.</p></div>
-                <div className="modal-actions"><button className="secondary" onClick={() => setShowStr(false)}>Save draft</button><button className="primary" onClick={() => setStrSubmitted(true)}>Submit encrypted STR</button></div>
+                <div className="modal-actions"><button className="secondary" onClick={() => setShowStr(false)}>Save draft</button><button className="primary" onClick={() => setStrSubmitted(true)}>Simulate approved submission</button></div>
               </>
             )}
           </section>
