@@ -107,6 +107,14 @@ type AuditEvent = {
   createdAt: string;
 };
 
+type AppUserRole = {
+  email: string;
+  role: "Administrator" | "ComplianceOfficer" | "Operator" | "Auditor";
+  status: "Active" | "Suspended";
+  assignedByEmail: string;
+  updatedAt: string;
+};
+
 const seededTransactions: Transaction[] = [
   {
     id: "HW-28491",
@@ -722,7 +730,10 @@ export default function Home() {
   const [settlements, setSettlements] = useState<SettlementCycle[]>([]);
   const [filings, setFilings] = useState<RegulatoryFiling[]>([]);
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
+  const [roleRecords, setRoleRecords] = useState<AppUserRole[]>([]);
   const [viewerRole, setViewerRole] = useState("Initializing role");
+  const [roleEmail, setRoleEmail] = useState("");
+  const [roleSelection, setRoleSelection] = useState<AppUserRole["role"]>("Auditor");
 
   useEffect(() => {
     const root = shellRef.current;
@@ -833,6 +844,7 @@ export default function Home() {
           filings?: RegulatoryFiling[];
           settings?: Array<{ key: string; value: string }>;
           auditEvents?: AuditEvent[];
+          userRoles?: AppUserRole[];
           viewer?: { role?: string };
         };
         if (!response.ok) return;
@@ -840,6 +852,7 @@ export default function Home() {
         setSettlements(payload.settlements || []);
         setFilings(payload.filings || []);
         setAuditEvents(payload.auditEvents || []);
+        setRoleRecords(payload.userRoles || []);
         if (payload.viewer?.role) setViewerRole(payload.viewer.role);
         const screeningSetting = payload.settings?.find((item) => item.key === "screening_rules");
         if (screeningSetting) {
@@ -1039,6 +1052,25 @@ export default function Home() {
     }
   }
 
+  async function assignApplicationRole(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLedgerMessage("");
+    try {
+      const response = await fetch("/api/operations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "assign_role", email: roleEmail, role: roleSelection, status: "Active" }),
+      });
+      const payload = (await response.json()) as { userRole?: AppUserRole; error?: string };
+      if (!response.ok || !payload.userRole) throw new Error(payload.error || "Unable to assign role.");
+      setRoleRecords((current) => [payload.userRole!, ...current.filter((item) => item.email !== payload.userRole!.email)]);
+      setRoleEmail("");
+      setLedgerMessage(`Access assigned to ${payload.userRole.email} and recorded in the audit trail.`);
+    } catch (error) {
+      setLedgerMessage(error instanceof Error ? error.message : "Unable to assign role.");
+    }
+  }
+
   async function saveFiling(status: "Draft" | "Simulated") {
     if (!selectedCase || !strNarrative.trim()) return;
     try {
@@ -1214,6 +1246,19 @@ export default function Home() {
                     <div><span className="avatar sage">CO</span><p><strong>Compliance officer</strong><small>Broker due diligence, case decisions, and filing preparation</small></p><em>Compliance</em></div>
                     <div><span className="avatar blue">OP</span><p><strong>Operator / Auditor</strong><small>Operational settlement or independent read-only review</small></p><em>Restricted</em></div>
                   </div>
+                </article>
+                <article className="panel settings-card role-admin-card">
+                  <div className="panel-heading"><div><h2>Access provisioning</h2><p>Administrator-only role assignment with durable attribution</p></div><span className="data-protection">{roleRecords.length} users</span></div>
+                  <form onSubmit={assignApplicationRole} className="role-admin-form">
+                    <label>Workspace email<input type="email" value={roleEmail} onChange={(event) => setRoleEmail(event.target.value)} placeholder="colleague@example.com" required /></label>
+                    <label>Application role<select value={roleSelection} onChange={(event) => setRoleSelection(event.target.value as AppUserRole["role"])}><option value="Auditor">Auditor</option><option value="Operator">Operator</option><option value="ComplianceOfficer">Compliance officer</option><option value="Administrator">Administrator</option></select></label>
+                    <button className="secondary" type="submit">Assign access</button>
+                  </form>
+                  <div className="role-records">
+                    {roleRecords.slice(0, 5).map((record) => <div key={record.email}><p><strong>{record.email}</strong><small>Assigned by {record.assignedByEmail || "bootstrap"} · {record.status}</small></p><em>{record.role}</em></div>)}
+                    {roleRecords.length === 0 && <div className="empty">Administrator role records appear after the owner bootstrap.</div>}
+                  </div>
+                  <p className="security-note">Provisioning here controls application authorization only. Production identity, MFA, workspace membership, and joiner/mover/leaver approval remain buyer-managed controls.</p>
                 </article>
                 <article className="panel settings-card">
                   <div className="panel-heading"><div><h2>Audit controls</h2><p>Evidence retention and accountable actions</p></div></div>

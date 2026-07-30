@@ -7,6 +7,7 @@ import {
   platformSettings,
   regulatoryFilings,
   settlementCycles,
+  userRoles,
 } from "../../../db/schema";
 
 function reference(prefix: string) {
@@ -39,12 +40,13 @@ export async function GET() {
     const user = await getAuthorizedUser();
     if (!user) return Response.json({ error: "Sign in is required to access operational records." }, { status: 401 });
     const db = getDb();
-    const [brokerRows, settlementRows, filingRows, settingRows, auditRows] = await Promise.all([
+    const [brokerRows, settlementRows, filingRows, settingRows, auditRows, roleRows] = await Promise.all([
       db.select().from(brokers).orderBy(desc(brokers.id)).limit(100),
       db.select().from(settlementCycles).orderBy(desc(settlementCycles.id)).limit(50),
       db.select().from(regulatoryFilings).orderBy(desc(regulatoryFilings.id)).limit(100),
       db.select().from(platformSettings).orderBy(platformSettings.key).limit(100),
       db.select().from(auditEvents).orderBy(desc(auditEvents.id)).limit(100),
+      user.role === "Administrator" ? db.select().from(userRoles).orderBy(userRoles.email).limit(100) : Promise.resolve([]),
     ]);
     return Response.json({
       brokers: brokerRows,
@@ -52,6 +54,7 @@ export async function GET() {
       filings: filingRows,
       settings: settingRows,
       auditEvents: auditRows,
+      userRoles: roleRows,
       viewer: { email: user.email, displayName: user.displayName, role: user.role },
     });
   } catch (error) {
@@ -67,6 +70,34 @@ export async function POST(request: Request) {
     const action = String(payload.action || "");
     const db = getDb();
     const requireRole = (roles: AppRole[]) => roles.includes(user.role);
+
+    if (action === "assign_role") {
+      if (!requireRole(["Administrator"])) return Response.json({ error: "Administrator authority is required." }, { status: 403 });
+      const email = String(payload.email || "").trim().toLowerCase();
+      const role = String(payload.role || "") as AppRole;
+      const status = payload.status === "Suspended" ? "Suspended" : "Active";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return Response.json({ error: "A valid workspace user email is required." }, { status: 400 });
+      if (!["Administrator", "ComplianceOfficer", "Operator", "Auditor"].includes(role)) return Response.json({ error: "A supported application role is required." }, { status: 400 });
+      if (email === user.email.toLowerCase() && status === "Suspended") return Response.json({ error: "Administrators cannot suspend their own active session." }, { status: 400 });
+      const [roleRecord] = await db.insert(userRoles).values({
+        email,
+        role,
+        status,
+        assignedByEmail: user.email,
+      }).onConflictDoUpdate({
+        target: userRoles.email,
+        set: { role, status, assignedByEmail: user.email, updatedAt: new Date().toISOString() },
+      }).returning();
+      await recordAudit({
+        eventType: "ACCESS_ADMINISTRATION",
+        entityType: "UserRole",
+        entityReference: email,
+        action: `${status === "Active" ? "Assigned" : "Suspended"} ${role} access`,
+        metadata: { role, status },
+        actorEmail: user.email,
+      });
+      return Response.json({ userRole: roleRecord });
+    }
 
     if (action === "onboard_broker") {
       if (!requireRole(["Administrator", "ComplianceOfficer"])) return Response.json({ error: "Administrator or compliance authority is required." }, { status: 403 });

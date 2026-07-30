@@ -1,0 +1,3 @@
+issue_id,opened_at,category,severity,summary,owner,due_date,status,containment,root_cause,corrective_action,evidence_reference
+PILOT-001,,Compliance,Medium,Example issue - replace before use,,,Open,,,,
+

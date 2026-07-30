@@ -1,0 +1,12 @@
+metric,definition,baseline,target,actual,evidence_owner,evidence_reference,status
+required_record_completeness,Completed required fields divided by required fields,,>=95%,,Data Owner,,Not started
+attributed_case_decisions,Decisions with analyst identity and rationale divided by all decisions,,100%,,Compliance Owner,,Not started
+reconciliation_exception_assignment,Median business time to assign an exception,,<=1 business day,,Operations Owner,,Not started
+screening_precision,Confirmed relevant alerts divided by reviewed alerts,Buyer baseline,Jointly approved,,Model Owner,,Not started
+screening_recall,Known relevant fixtures detected divided by relevant fixtures,Buyer baseline,Jointly approved,,Model Owner,,Not started
+false_positive_rate,False alerts divided by reviewed alerts,Buyer baseline,Improvement agreed,,Compliance Owner,,Not started
+broker_onboarding_time,Median hours from complete application to decision,Buyer baseline,Improvement agreed,,Broker Ops,,Not started
+cost_per_recorded_transfer,Fully loaded pilot cost divided by recorded transfers,Buyer baseline,Measured only,,Finance Owner,,Not started
+human_approved_filings,Prepared filings with accountable approval divided by all prepared filings,,100%,,MLRO,,Not started
+external_shadow_transmissions,External submissions or funds movements during shadow phase,0,0,,Audit Owner,,Not started
+
