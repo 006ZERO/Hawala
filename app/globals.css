@@ -355,6 +355,62 @@ kbd { background: #f1f3f2; border: 1px solid #e1e5e3; color: #8b9692; border-rad
 .pilot-timeline p { display: grid; gap: 3px; margin: 0; }
 .pilot-timeline strong { font-size: 8.5px; }
 .pilot-timeline small { color: var(--muted); font-size: 7.5px; line-height: 1.4; }
+
+/* Operational design pass: flatter hierarchy, readable type, restrained decoration. */
+:root {
+  --canvas: #f3f5f3;
+  --line: #d8dedb;
+  --muted: #62706b;
+}
+.brand-mark, .primary, .pilot-banner, .demo-coach, .notification-center { box-shadow: none; }
+.brand-mark, .panel, .metrics article, .pilot-metrics article, .notification-center { border-radius: 7px; }
+.license-card, .environment-banner, .ledger-message, .demo-launch, .nav-item, .primary, .secondary { border-radius: 6px; }
+.welcome h1, .metrics article strong, .demo-coach h2, .notification-head strong {
+  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: -.02em;
+}
+.welcome h1 { font-size: clamp(26px, 2.6vw, 34px); font-weight: 650; }
+.content { max-width: 1320px; padding-top: 30px; }
+.welcome { margin-bottom: 22px; }
+.eyebrow { font-size: 10px; letter-spacing: .09em; }
+.welcome p:last-child { max-width: 720px; font-size: 13px; line-height: 1.5; }
+.primary { padding: 11px 15px; font-size: 12px; font-weight: 700; }
+.panel-heading { padding: 17px 18px 13px; }
+.panel-heading h2 { font-size: 14px; }
+.panel-heading p { max-width: 560px; font-size: 10.5px; line-height: 1.45; }
+.panel-heading button { font-size: 10px; }
+.metrics { gap: 10px; }
+.metrics article { min-height: 96px; padding: 15px; }
+.metric-icon { width: 30px; height: 30px; border-radius: 6px; }
+.metrics article span { font-size: 11px; }
+.metrics article strong { font-size: 22px; font-weight: 650; }
+.metrics article small { font-size: 10px; font-weight: 600; }
+.sparkline { display: none; }
+.environment-banner { padding: 9px 12px; border-color: #e3d7bd; background: #faf7f0; }
+.environment-banner > span { border-radius: 4px; background: #8a682e; padding: 4px 6px; font-size: 8px; }
+.environment-banner p, .environment-banner button { font-size: 9.5px; }
+.connection-demo, .settings-badge, .data-protection, .report-ready, .risk-pill, .status-pill, .connection-live {
+  border-radius: 4px !important;
+  letter-spacing: 0 !important;
+}
+.content small, .modal small, .notification-center small { font-size: 9.5px; line-height: 1.45; }
+.content p, .content label, .content input, .content select, .content textarea, .content button { line-height: 1.45; }
+.content td, .content th { font-size: 10px; }
+.pilot-banner { border: 1px solid #244d45; border-radius: 7px; background: #1d443c; }
+.pilot-banner h2 { font-size: 18px; }
+.pilot-banner p { font-size: 10.5px; }
+.pilot-banner em { border-radius: 4px; }
+.pilot-metrics span, .pilot-metrics small { font-size: 10px; }
+.pilot-gates strong, .pilot-integrations b, .scorecard-table strong, .scorecard-table span, .scorecard-table em, .pilot-timeline strong { font-size: 10px; }
+.pilot-gates small, .pilot-gates em, .pilot-integrations dt, .pilot-integrations span, .pilot-timeline small { font-size: 9px; }
+.demo-coach { border-radius: 8px; background: #fff; backdrop-filter: none; }
+.demo-progress i { border-radius: 0; }
+.sidebar { width: 230px; padding-left: 14px; padding-right: 14px; }
+.workspace { width: calc(100% - 230px); margin-left: 230px; }
+.app-shell[dir="rtl"] .workspace { margin-right: 230px; }
+.nav-item { font-size: 12.5px; font-weight: 550; }
+.nav-item.active { box-shadow: inset 3px 0 0 var(--green); }
+.app-shell[dir="rtl"] .nav-item.active { box-shadow: inset -3px 0 0 var(--green); }
 .settings-footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 12px; background: white; }
 .settings-footer > div { display: grid; gap: 4px; }
 .settings-footer strong { font-size: 9.5px; }
