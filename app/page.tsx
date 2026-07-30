@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, FormEvent, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type Transaction = {
   id: string;
@@ -217,6 +217,191 @@ const translations = {
 
 type Language = keyof typeof translations;
 
+const arabicUi: Record<string, string> = {
+  "DEMO ENVIRONMENT": "بيئة تجريبية",
+  "Synthetic records · Simulated screening and regulator connections · No funds move": "سجلات اصطناعية · فحص وربط رقابي محاكيان · لا يتم نقل أموال",
+  "Current demonstration dataset": "بيانات العرض الحالية",
+  "Demo configuration · No live authority connection": "إعداد تجريبي · لا يوجد اتصال مباشر بجهة رقابية",
+  "Simulated list snapshot · Live provider connection required": "نسخة قوائم محاكاة · يلزم ربط مزود مباشر",
+  "Simulated PEP dataset · Licensed data source required": "بيانات أشخاص معرضين سياسياً محاكاة · يلزم مصدر بيانات مرخّص",
+  "Demo workflow · Analyst decisions remain accountable": "سير عمل تجريبي · تظل قرارات المحلل خاضعة للمساءلة",
+  "No live authority connection": "لا يوجد اتصال مباشر بجهة رقابية",
+  "No live central-bank connection or statutory feed is active.": "لا يوجد اتصال مباشر ببنك مركزي أو تغذية نظامية فعالة.",
+  "A simulated regulator connector acknowledged this demonstration filing. Nothing was transmitted externally.": "أكد موصل رقابي محاكى استلام هذا البلاغ التجريبي. لم يتم إرسال أي شيء خارجياً.",
+  "COMPLIANCE OS": "نظام تشغيل الامتثال",
+  "Start guided demo": "ابدأ العرض الإرشادي",
+  "Exit demo": "إنهاء العرض",
+  "Back": "السابق",
+  "Next": "التالي",
+  "Close": "إغلاق",
+  "Settings": "الإعدادات",
+  "Notifications": "الإشعارات",
+  "Mark all read": "تحديد الكل كمقروء",
+  "Needs attention": "يتطلب الانتباه",
+  "Recent transactions": "المعاملات الأخيرة",
+  "Processed volume · Last 7 days": "حجم المعاملات · آخر 7 أيام",
+  "Formalized volume": "الحجم المسجل رسمياً",
+  "active corridors": "الممرات النشطة",
+  "Open cases": "الحالات المفتوحة",
+  "Average clearance": "متوسط زمن المعالجة",
+  "Risk distribution": "توزيع المخاطر",
+  "Transaction monitoring outcomes": "نتائج مراقبة المعاملات",
+  "Risk mix": "مزيج المخاطر",
+  "screened": "تم فحصها",
+  "Low": "منخفض",
+  "Medium": "متوسط",
+  "High": "مرتفع",
+  "Cleared": "مقبولة",
+  "Review": "قيد المراجعة",
+  "Open": "مفتوحة",
+  "Escalated": "مصعّدة",
+  "All": "الكل",
+  "Sender": "المرسل",
+  "Corridor": "الممر",
+  "Amount": "المبلغ",
+  "Risk": "المخاطر",
+  "Status": "الحالة",
+  "Action": "الإجراء",
+  "View details": "عرض التفاصيل",
+  "Record transfer": "تسجيل تحويل",
+  "NEW TRANSFER": "تحويل جديد",
+  "Record a customer transfer": "تسجيل تحويل للعميل",
+  "Customer": "العميل",
+  "Destination": "الوجهة",
+  "Amount (JOD)": "المبلغ (دينار أردني)",
+  "Purpose": "الغرض",
+  "Family support": "دعم الأسرة",
+  "Education": "التعليم",
+  "Medical expenses": "مصاريف طبية",
+  "Salary": "راتب",
+  "Approve and record transfer": "اعتماد التحويل وتسجيله",
+  "Automated compliance checks": "فحوص الامتثال الآلية",
+  "Passed automated screening": "اجتاز الفحص الآلي",
+  "Requires analyst attention": "يتطلب مراجعة محلل",
+  "Customer directory": "دليل العملاء",
+  "Customer population": "قاعدة العملاء",
+  "Verified": "موثّق",
+  "Pending review": "قيد المراجعة",
+  "Add customer": "إضافة عميل",
+  "CUSTOMER ONBOARDING": "تسجيل عميل",
+  "Create a verified record": "إنشاء سجل موثّق",
+  "Full legal name": "الاسم القانوني الكامل",
+  "Nationality": "الجنسية",
+  "Identity type": "نوع الهوية",
+  "National ID": "بطاقة شخصية",
+  "Passport": "جواز سفر",
+  "Residence permit": "تصريح إقامة",
+  "Identity number": "رقم الهوية",
+  "Create customer record": "إنشاء سجل العميل",
+  "Identity and KYC": "الهوية واعرف عميلك",
+  "Identity verified · Customer record linked": "تم توثيق الهوية · سجل العميل مرتبط",
+  "Registered broker network": "شبكة الوكلاء المسجلين",
+  "Registered brokers": "الوكلاء المسجلون",
+  "Network liquidity": "سيولة الشبكة",
+  "Settlement exposure": "التعرض للتسوية",
+  "Onboard broker": "تسجيل وكيل",
+  "BROKER DUE DILIGENCE": "العناية الواجبة بالوكيل",
+  "Onboard a licensed broker": "تسجيل وكيل مرخّص",
+  "Legal entity name": "اسم الكيان القانوني",
+  "Trading name": "الاسم التجاري",
+  "Jurisdiction": "الاختصاص القضائي",
+  "Operating city": "مدينة التشغيل",
+  "Money-service license number": "رقم ترخيص خدمات الأموال",
+  "Compliance officer email": "بريد مسؤول الامتثال",
+  "Requested operating corridors": "ممرات التشغيل المطلوبة",
+  "Create pending broker record": "إنشاء سجل وكيل معلّق",
+  "Prefunded balance": "الرصيد الممول مسبقاً",
+  "Net position": "صافي المركز",
+  "Liquidity coverage": "تغطية السيولة",
+  "Corridor positions": "مراكز الممرات",
+  "Settlement cycle": "دورة التسوية",
+  "Current multilateral netting window": "نافذة المقاصة متعددة الأطراف الحالية",
+  "Gross obligations": "إجمالي الالتزامات",
+  "Net payable": "صافي المبلغ المستحق",
+  "Settlement cycle is ready": "دورة التسوية جاهزة",
+  "Settle": "تنفيذ التسوية",
+  "Compliance review": "مراجعة الامتثال",
+  "Case queue": "قائمة الحالات",
+  "Prioritized by severity and age": "مرتبة حسب الخطورة والعمر",
+  "Open compliance case": "فتح حالة امتثال",
+  "Detection and evidence provenance": "مصدر الكشف والأدلة",
+  "Detection mode": "أسلوب الكشف",
+  "Rule identifiers": "معرّفات القواعد",
+  "Rule version": "إصدار القواعد",
+  "Model version": "إصدار النموذج",
+  "Evidence source": "مصدر الأدلة",
+  "Illustrative model": "نموذج توضيحي",
+  "Automated indicators": "المؤشرات الآلية",
+  "Explainable triggers": "محفزات قابلة للتفسير",
+  "Investigation note": "ملاحظة التحقيق",
+  "Human override reason (required when changing the automated recommendation)": "سبب التجاوز البشري (مطلوب عند تغيير التوصية الآلية)",
+  "Clear with note": "إغلاق مع ملاحظة",
+  "Escalate case": "تصعيد الحالة",
+  "Case timeline": "الخط الزمني للحالة",
+  "Prepare suspicious transaction report →": "إعداد تقرير معاملة مشبوهة ←",
+  "Human-approved filing preparation": "إعداد بلاغ بموافقة بشرية",
+  "REGULATORY FILING · DRAFT": "بلاغ رقابي · مسودة",
+  "Case reference": "مرجع الحالة",
+  "Regulatory narrative": "السرد الرقابي",
+  "Approval": "الاعتماد",
+  "Save draft": "حفظ المسودة",
+  "Simulate approved submission": "محاكاة إرسال معتمد",
+  "Nothing is transmitted externally": "لا يتم إرسال أي شيء خارجياً",
+  "Prefilled from the case evidence trail. Production submission requires authority onboarding, credentials, and accountable analyst approval.": "معبأ مسبقاً من سجل أدلة الحالة. يتطلب الإرسال الإنتاجي تسجيل الجهة الرقابية وبيانات اعتماد وموافقة محلل مسؤول.",
+  "Demo receipt": "إيصال تجريبي",
+  "Reporting center": "مركز التقارير",
+  "Recorded volume": "الحجم المسجل",
+  "Corridor exposure": "التعرض حسب الممر",
+  "Case closure rate": "معدل إغلاق الحالات",
+  "Export evidence pack": "تصدير حزمة الأدلة",
+  "Central bank oversight": "رقابة البنك المركزي",
+  "Demo regulator view": "عرض رقابي تجريبي",
+  "No customer PII": "لا توجد بيانات هوية شخصية للعملاء",
+  "Cross-border flow monitor": "مراقبة التدفقات العابرة للحدود",
+  "Reporting entity register": "سجل الجهات المبلغة",
+  "Reporting health": "سلامة التقارير",
+  "Automated screening": "الفحص الآلي",
+  "Sanctions screening": "فحص العقوبات",
+  "PEP screening": "فحص الأشخاص المعرضين سياسياً",
+  "Behavioral monitoring": "مراقبة السلوك",
+  "Regulatory connection": "الربط الرقابي",
+  "Central Bank reporting profile": "ملف تقارير البنك المركزي",
+  "Illustrative": "توضيحي",
+  "Reporting mode": "وضع الإبلاغ",
+  "Human approval required": "موافقة بشرية مطلوبة",
+  "Roles and approvals": "الأدوار والموافقات",
+  "Server-enforced separation of duties": "فصل المهام مطبق على الخادم",
+  "Administrator": "مسؤول النظام",
+  "Compliance officer": "مسؤول الامتثال",
+  "Operator / Auditor": "مشغّل / مدقق",
+  "Full control": "تحكم كامل",
+  "Restricted": "مقيّد",
+  "Audit controls": "ضوابط التدقيق",
+  "Evidence retention": "الاحتفاظ بالأدلة",
+  "Immutable decision trail": "سجل قرارات غير قابل للتغيير",
+  "Analyst identity attribution": "إسناد هوية المحلل",
+  "Attributed audit stream": "سجل تدقيق منسوب",
+  "Durable operational and compliance events": "أحداث تشغيل وامتثال محفوظة",
+  "Security and access posture": "وضع الأمن والوصول",
+  "Identity": "الهوية",
+  "Application authorization": "صلاحيات التطبيق",
+  "Current role": "الدور الحالي",
+  "Site access": "الوصول إلى الموقع",
+  "MFA": "المصادقة متعددة العوامل",
+  "Production dependency": "متطلبات الإنتاج",
+  "Owner-only private demo": "عرض خاص بالمالك فقط",
+  "OpenAI workspace session": "جلسة مساحة عمل OpenAI",
+  "Server-side RBAC": "تحكم بالأدوار على الخادم",
+  "Inherited from workspace policy": "موروثة من سياسة مساحة العمل",
+  "Customer IAM, key, residency, and retention approval": "اعتماد هوية العميل والمفاتيح ومكان البيانات والاحتفاظ",
+  "The first authenticated owner is bootstrapped as administrator while access remains owner-only. Production onboarding requires explicit role provisioning and customer-approved security controls.": "يتم تعيين أول مالك موثّق كمسؤول نظام ما دام الوصول مقتصراً على المالك. يتطلب التشغيل الإنتاجي تعييناً صريحاً للأدوار وضوابط أمنية معتمدة من العميل.",
+  "Save configuration": "حفظ الإعدادات",
+  "Changes require administrator authority": "تتطلب التغييرات صلاحية مسؤول النظام",
+};
+
+const originalText = new WeakMap<Text, string>();
+const originalAttributes = new WeakMap<Element, Record<string, string>>();
+
 const seededBrokerCards = [
   { name: "Al Noor Exchange", city: "Amman", code: "BR-JO-014", corridor: "Egypt", balance: 18420, position: 3260, status: "Active", initials: "AN" },
   { name: "Cairo Trust Remit", city: "Cairo", code: "BR-EG-032", corridor: "Jordan", balance: 12780, position: -3260, status: "Active", initials: "CT" },
@@ -252,6 +437,7 @@ function toDashboardTransaction(transfer: StoredTransfer): Transaction {
 }
 
 export default function Home() {
+  const shellRef = useRef<HTMLElement>(null);
   const [active, setActive] = useState("Overview");
   const [language, setLanguage] = useState<Language>("EN");
   const [showTransfer, setShowTransfer] = useState(false);
@@ -290,6 +476,38 @@ export default function Home() {
   const [filings, setFilings] = useState<RegulatoryFiling[]>([]);
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [viewerRole, setViewerRole] = useState("Initializing role");
+
+  useEffect(() => {
+    const root = shellRef.current;
+    if (!root) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode() as Text | null;
+    while (node) {
+      if (!originalText.has(node)) originalText.set(node, node.nodeValue || "");
+      const source = originalText.get(node) || "";
+      if (language === "AR") {
+        const trimmed = source.trim();
+        const translated = arabicUi[trimmed];
+        if (translated) node.nodeValue = source.replace(trimmed, translated);
+      } else {
+        node.nodeValue = source;
+      }
+      node = walker.nextNode() as Text | null;
+    }
+    for (const element of root.querySelectorAll("[placeholder], [aria-label], [title]")) {
+      if (!originalAttributes.has(element)) {
+        const saved: Record<string, string> = {};
+        for (const attribute of ["placeholder", "aria-label", "title"]) {
+          const value = element.getAttribute(attribute);
+          if (value) saved[attribute] = value;
+        }
+        originalAttributes.set(element, saved);
+      }
+      for (const [attribute, source] of Object.entries(originalAttributes.get(element) || {})) {
+        element.setAttribute(attribute, language === "AR" ? arabicUi[source] || source : source);
+      }
+    }
+  });
 
   useEffect(() => {
     async function loadTransfers() {
@@ -614,7 +832,7 @@ export default function Home() {
   }
 
   return (
-    <main className="app-shell" dir={language === "AR" || language === "UR" ? "rtl" : "ltr"}>
+    <main ref={shellRef} className="app-shell" lang={language === "AR" ? "ar" : language === "UR" ? "ur" : language === "TL" ? "fil" : "en"} dir={language === "AR" || language === "UR" ? "rtl" : "ltr"}>
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark" aria-hidden="true">
