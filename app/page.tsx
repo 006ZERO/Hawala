@@ -47,6 +47,63 @@ type ComplianceCase = {
   reasons: string;
   note: string;
   assignedToEmail: string;
+  detectionMode: string;
+  ruleCodes: string;
+  ruleVersion: string;
+  modelVersion: string;
+  evidenceProvenance: string;
+  overrideReason: string;
+  createdAt: string;
+};
+
+type OperationalBroker = {
+  reference: string;
+  legalName: string;
+  tradingName: string;
+  jurisdiction: string;
+  city: string;
+  licenseNumberLast4: string;
+  beneficialOwnerStatus: "Verified" | "Pending review";
+  complianceOfficerEmail: string;
+  corridors: string;
+  prefundedBalanceJod: number;
+  netPositionJod: number;
+  risk: "Low" | "Medium" | "High";
+  status: "Pending" | "Active" | "Suspended";
+  createdAt: string;
+};
+
+type SettlementCycle = {
+  reference: string;
+  cycleLabel: string;
+  grossAmountJod: number;
+  netAmountJod: number;
+  status: "Ready" | "Settled" | "Disputed";
+  proofMode: string;
+  reconciliationNote: string;
+  approvedByEmail: string;
+  settledAt: string;
+};
+
+type RegulatoryFiling = {
+  reference: string;
+  caseReference: string;
+  status: "Draft" | "Approved" | "Simulated";
+  narrative: string;
+  approvedByEmail: string;
+  demoReceipt: string;
+  createdAt: string;
+};
+
+type AuditEvent = {
+  reference: string;
+  eventType: string;
+  entityType: string;
+  entityReference: string;
+  action: string;
+  outcome: string;
+  metadata: string;
+  actorEmail: string;
   createdAt: string;
 };
 
@@ -160,7 +217,7 @@ const translations = {
 
 type Language = keyof typeof translations;
 
-const brokers = [
+const seededBrokerCards = [
   { name: "Al Noor Exchange", city: "Amman", code: "BR-JO-014", corridor: "Egypt", balance: 18420, position: 3260, status: "Active", initials: "AN" },
   { name: "Cairo Trust Remit", city: "Cairo", code: "BR-EG-032", corridor: "Jordan", balance: 12780, position: -3260, status: "Active", initials: "CT" },
   { name: "PakLink Services", city: "Lahore", code: "BR-PK-008", corridor: "Jordan", balance: 24400, position: -4850, status: "Active", initials: "PS" },
@@ -204,7 +261,9 @@ export default function Home() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [showStr, setShowStr] = useState(false);
   const [strSubmitted, setStrSubmitted] = useState(false);
+  const [strNarrative, setStrNarrative] = useState("");
   const [showCustomer, setShowCustomer] = useState(false);
+  const [showBroker, setShowBroker] = useState(false);
   const [created, setCreated] = useState(false);
   const [customerCreated, setCustomerCreated] = useState(false);
   const [query, setQuery] = useState("");
@@ -225,6 +284,12 @@ export default function Home() {
   const [cases, setCases] = useState<ComplianceCase[]>([]);
   const [selectedCaseReference, setSelectedCaseReference] = useState("");
   const [caseNote, setCaseNote] = useState("");
+  const [caseOverrideReason, setCaseOverrideReason] = useState("");
+  const [operationalBrokers, setOperationalBrokers] = useState<OperationalBroker[]>([]);
+  const [settlements, setSettlements] = useState<SettlementCycle[]>([]);
+  const [filings, setFilings] = useState<RegulatoryFiling[]>([]);
+  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
+  const [viewerRole, setViewerRole] = useState("Initializing role");
 
   useEffect(() => {
     async function loadTransfers() {
@@ -260,6 +325,7 @@ export default function Home() {
   }, []);
 
   const selectedCase = cases.find((item) => item.reference === selectedCaseReference) || cases[0];
+  const latestCaseFiling = selectedCase ? filings.find((item) => item.caseReference === selectedCase.reference) : undefined;
   const ui = translations[language];
   const localizedWelcome = ui.welcome[active as keyof typeof ui.welcome] || ui.welcome.Overview;
   const currentDemoStep = demoStep === null ? null : demoJourney[demoStep];
@@ -291,6 +357,49 @@ export default function Home() {
     }
     void loadCustomers();
   }, []);
+
+  useEffect(() => {
+    async function loadOperations() {
+      try {
+        const response = await fetch("/api/operations");
+        const payload = (await response.json()) as {
+          brokers?: OperationalBroker[];
+          settlements?: SettlementCycle[];
+          filings?: RegulatoryFiling[];
+          settings?: Array<{ key: string; value: string }>;
+          auditEvents?: AuditEvent[];
+          viewer?: { role?: string };
+        };
+        if (!response.ok) return;
+        setOperationalBrokers(payload.brokers || []);
+        setSettlements(payload.settlements || []);
+        setFilings(payload.filings || []);
+        setAuditEvents(payload.auditEvents || []);
+        if (payload.viewer?.role) setViewerRole(payload.viewer.role);
+        const screeningSetting = payload.settings?.find((item) => item.key === "screening_rules");
+        if (screeningSetting) {
+          const parsed = JSON.parse(screeningSetting.value) as typeof screeningRules;
+          setScreeningRules(parsed);
+        }
+      } catch {
+        // Synthetic fallback data remains available while durable operations reconnect.
+      }
+    }
+    void loadOperations();
+  }, []);
+
+  const brokerCards = useMemo(() => operationalBrokers.length ? operationalBrokers.map((broker) => ({
+    name: broker.tradingName,
+    city: broker.city,
+    code: broker.reference,
+    corridor: (JSON.parse(broker.corridors) as string[])[0] || "Not configured",
+    balance: broker.prefundedBalanceJod,
+    position: broker.netPositionJod,
+    status: broker.status === "Pending" ? "Review" : broker.status,
+    initials: broker.tradingName.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase(),
+  })) : seededBrokerCards, [operationalBrokers]);
+  const latestSettlement = settlements[0];
+  const settlementComplete = settlementRun || latestSettlement?.status === "Settled";
 
   const filtered = useMemo(
     () =>
@@ -375,15 +484,117 @@ export default function Home() {
       const response = await fetch("/api/cases", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ reference: selectedCase.reference, status, note: caseNote }),
+        body: JSON.stringify({ reference: selectedCase.reference, status, note: caseNote, overrideReason: caseOverrideReason }),
       });
       const payload = (await response.json()) as { case?: ComplianceCase; error?: string };
       if (!response.ok || !payload.case) throw new Error(payload.error || "Unable to update case.");
       setCases((current) => current.map((item) => item.reference === payload.case!.reference ? payload.case! : item));
       setCaseNote("");
+      setCaseOverrideReason("");
       setLedgerMessage("");
     } catch (error) {
       setLedgerMessage(error instanceof Error ? error.message : "Unable to update case.");
+    }
+  }
+
+  async function submitBroker(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    try {
+      const response = await fetch("/api/operations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "onboard_broker",
+          legalName: formData.get("legalName"),
+          tradingName: formData.get("tradingName"),
+          jurisdiction: formData.get("jurisdiction"),
+          city: formData.get("city"),
+          licenseNumber: formData.get("licenseNumber"),
+          complianceOfficerEmail: formData.get("complianceOfficerEmail"),
+          corridors: formData.getAll("corridors"),
+        }),
+      });
+      const payload = (await response.json()) as { broker?: OperationalBroker; error?: string };
+      if (!response.ok || !payload.broker) throw new Error(payload.error || "Unable to onboard broker.");
+      setOperationalBrokers((current) => [payload.broker!, ...current]);
+      setShowBroker(false);
+      setLedgerMessage("");
+    } catch (error) {
+      setLedgerMessage(error instanceof Error ? error.message : "Unable to onboard broker.");
+    }
+  }
+
+  async function runSettlement() {
+    try {
+      const response = await fetch("/api/operations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "settle_cycle",
+          cycleLabel: "Current demonstration cycle",
+          grossAmountJod: 8790,
+          netAmountJod: 4850,
+          proofMode: "Database audit record; optional distributed-ledger anchor",
+          reconciliationNote: "Prefunding, bilateral positions, and net payable reconciled by an authorized operator.",
+        }),
+      });
+      const payload = (await response.json()) as { settlement?: SettlementCycle; error?: string };
+      if (!response.ok || !payload.settlement) throw new Error(payload.error || "Unable to settle cycle.");
+      setSettlements((current) => [payload.settlement!, ...current]);
+      setSettlementRun(true);
+      setLedgerMessage("");
+    } catch (error) {
+      setLedgerMessage(error instanceof Error ? error.message : "Unable to settle cycle.");
+    }
+  }
+
+  async function savePlatformConfiguration() {
+    try {
+      const response = await fetch("/api/operations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "save_settings",
+          values: {
+            screening_rules: screeningRules,
+            retention_years: 7,
+            case_approval_threshold: 70,
+            environment_mode: "demonstration",
+          },
+        }),
+      });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(payload.error || "Unable to save configuration.");
+      setSettingsSaved(true);
+      window.setTimeout(() => setSettingsSaved(false), 3500);
+      setLedgerMessage("");
+    } catch (error) {
+      setLedgerMessage(error instanceof Error ? error.message : "Unable to save configuration.");
+    }
+  }
+
+  async function saveFiling(status: "Draft" | "Simulated") {
+    if (!selectedCase || !strNarrative.trim()) return;
+    try {
+      const response = await fetch("/api/operations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "prepare_filing",
+          caseReference: selectedCase.reference,
+          narrative: strNarrative,
+          status,
+        }),
+      });
+      const payload = (await response.json()) as { filing?: RegulatoryFiling; error?: string };
+      if (!response.ok || !payload.filing) throw new Error(payload.error || "Unable to save filing.");
+      setFilings((current) => [payload.filing!, ...current]);
+      setStrSubmitted(status === "Simulated");
+      if (status === "Draft") setShowStr(false);
+      setLedgerMessage("");
+    } catch (error) {
+      setLedgerMessage(error instanceof Error ? error.message : "Unable to save filing.");
     }
   }
 
@@ -534,29 +745,49 @@ export default function Home() {
                   <dl className="connection-details"><div><dt>Reporting mode</dt><dd>Simulated secure API</dd></div><div><dt>STR workflow</dt><dd>Human approval required</dd></div><div><dt>Last demonstration</dt><dd>Today, 10:45 AM</dd></div><div><dt>Production dependency</dt><dd>Authority onboarding</dd></div></dl>
                 </article>
                 <article className="panel settings-card">
-                  <div className="panel-heading"><div><h2>Roles and approvals</h2><p>Separation of duties for sensitive actions</p></div></div>
-                  <div className="role-list"><div><span className="avatar dark">YK</span><p><strong>Yousef Khoury</strong><small>Compliance officer · Case decisions</small></p><em>Administrator</em></div><div><span className="avatar sage">LA</span><p><strong>Lina Abu-Salem</strong><small>Operations · Transfer initiation</small></p><em>Operator</em></div><div><span className="avatar blue">RM</span><p><strong>Rami Mansour</strong><small>Internal audit · Read-only access</small></p><em>Auditor</em></div></div>
+                  <div className="panel-heading"><div><h2>Roles and approvals</h2><p>Server-enforced separation of duties</p></div><span className="settings-badge">{viewerRole}</span></div>
+                  <div className="role-list">
+                    <div><span className="avatar dark">AD</span><p><strong>Administrator</strong><small>Configuration, onboarding, filings, and settlement</small></p><em>Full control</em></div>
+                    <div><span className="avatar sage">CO</span><p><strong>Compliance officer</strong><small>Broker due diligence, case decisions, and filing preparation</small></p><em>Compliance</em></div>
+                    <div><span className="avatar blue">OP</span><p><strong>Operator / Auditor</strong><small>Operational settlement or independent read-only review</small></p><em>Restricted</em></div>
+                  </div>
                 </article>
                 <article className="panel settings-card">
                   <div className="panel-heading"><div><h2>Audit controls</h2><p>Evidence retention and accountable actions</p></div></div>
                   <div className="audit-settings"><label>Evidence retention<select defaultValue="7 years"><option>5 years</option><option>7 years</option><option>10 years</option></select></label><label>Case approval threshold<select defaultValue="Risk score 70+"><option>Risk score 60+</option><option>Risk score 70+</option><option>All escalations</option></select></label><div><span>Immutable decision trail</span><strong>Enabled</strong></div><div><span>Analyst identity attribution</span><strong>Required</strong></div></div>
                 </article>
+                <article className="panel settings-card audit-stream-card">
+                  <div className="panel-heading"><div><h2>Attributed audit stream</h2><p>Durable operational and compliance events</p></div><span className="data-protection">{auditEvents.length} events</span></div>
+                  <div className="audit-stream">{auditEvents.slice(0, 6).map((event) => <div key={event.reference}><span>{event.eventType.slice(0, 2)}</span><p><strong>{event.action}</strong><small>{event.entityReference} · {event.actorEmail} · {new Date(event.createdAt).toLocaleString("en-GB")}</small></p><em>{event.outcome}</em></div>)}{auditEvents.length === 0 && <div className="empty">Durable events will appear after the first saved operation.</div>}</div>
+                </article>
+                <article className="panel settings-card">
+                  <div className="panel-heading"><div><h2>Security and access posture</h2><p>Controls available in this private demonstration</p></div><span className="connection-demo">Verified scope</span></div>
+                  <dl className="connection-details">
+                    <div><dt>Identity</dt><dd>OpenAI workspace session</dd></div>
+                    <div><dt>Application authorization</dt><dd>Server-side RBAC</dd></div>
+                    <div><dt>Current role</dt><dd>{viewerRole}</dd></div>
+                    <div><dt>Site access</dt><dd>Owner-only private demo</dd></div>
+                    <div><dt>MFA</dt><dd>Inherited from workspace policy</dd></div>
+                    <div><dt>Production dependency</dt><dd>Customer IAM, key, residency, and retention approval</dd></div>
+                  </dl>
+                  <p className="security-note">The first authenticated owner is bootstrapped as administrator while access remains owner-only. Production onboarding requires explicit role provisioning and customer-approved security controls.</p>
+                </article>
               </div>
-              <div className="settings-footer"><div><strong>Changes require administrator authority</strong><span>Every configuration change is timestamped and attributed.</span></div><button className="primary" onClick={() => { setSettingsSaved(true); window.setTimeout(() => setSettingsSaved(false), 3500); }}>Save configuration</button></div>
+              <div className="settings-footer"><div><strong>Changes require administrator authority</strong><span>Every configuration change is persisted, timestamped, and attributed.</span></div><button className="primary" onClick={savePlatformConfiguration}>Save configuration</button></div>
             </section>
           ) : active === "Brokers" ? (
             <section className="broker-workspace">
               <div className="broker-summary">
-                <article><span>Registered brokers</span><strong>{brokers.length}</strong><small>Across three countries</small></article>
-                <article><span>Network liquidity</span><strong>JOD {brokers.reduce((total, broker) => total + broker.balance, 0).toLocaleString("en-US")}</strong><small>Available prefunded balance</small></article>
+                <article><span>Registered brokers</span><strong>{brokerCards.length}</strong><small>Across three countries</small></article>
+                <article><span>Network liquidity</span><strong>JOD {brokerCards.reduce((total, broker) => total + broker.balance, 0).toLocaleString("en-US")}</strong><small>Available prefunded balance</small></article>
                 <article><span>Settlement exposure</span><strong>JOD 8,790</strong><small>Gross obligations before netting</small></article>
                 <article><span>Net settlement</span><strong>JOD 4,850</strong><small>45% reduction after netting</small></article>
               </div>
               <div className="broker-grid">
                 <article className="panel broker-directory">
-                  <div className="panel-heading"><div><h2>Registered broker network</h2><p>Licensed participants and live liquidity positions</p></div><span className="data-protection">Identity verified</span></div>
+                  <div className="panel-heading"><div><h2>Registered broker network</h2><p>Licensed participants and live liquidity positions</p></div><button className="secondary" onClick={() => setShowBroker(true)}>＋ Onboard broker</button></div>
                   <div className="broker-list">
-                    {brokers.map((broker) => (
+                    {brokerCards.map((broker) => (
                       <div className="broker-row" key={broker.code}>
                         <span className="broker-avatar">{broker.initials}</span>
                         <div><strong>{broker.name}</strong><small>{broker.code} · {broker.city}</small></div>
@@ -569,10 +800,10 @@ export default function Home() {
                 </article>
                 <article className="panel settlement-panel">
                   <div className="panel-heading"><div><h2>Settlement cycle</h2><p>Current multilateral netting window</p></div></div>
-                  <div className={`settlement-state ${settlementRun ? "settled" : ""}`}>
-                    <span>{settlementRun ? "✓" : "⇄"}</span>
-                    <strong>{settlementRun ? "Cycle settled" : "Ready to settle"}</strong>
-                    <p>{settlementRun ? "Positions were netted and a simulated audit proof was recorded." : "Four illustrative broker positions passed balance and compliance checks."}</p>
+                  <div className={`settlement-state ${settlementComplete ? "settled" : ""}`}>
+                    <span>{settlementComplete ? "✓" : "⇄"}</span>
+                    <strong>{settlementComplete ? "Cycle settled" : "Ready to settle"}</strong>
+                    <p>{settlementComplete ? `Persisted as ${latestSettlement?.reference || "the current demo cycle"} with attributed approval.` : "Four illustrative broker positions passed balance and compliance checks."}</p>
                   </div>
                   <div className="settlement-flow">
                     <div><span>Gross obligations</span><strong>JOD 8,790</strong></div>
@@ -580,7 +811,7 @@ export default function Home() {
                     <div><span>Net payable</span><strong>JOD 4,850</strong></div>
                   </div>
                   <div className="settlement-checks"><span>✓ Demo broker identities verified</span><span>✓ Illustrative prefunding confirmed</span><span>✓ Synthetic transaction batch screened</span><span>◇ Optional distributed-ledger proof; not required for settlement</span></div>
-                  <button className="primary full" disabled={settlementRun} onClick={() => setSettlementRun(true)}>{settlementRun ? "Demo settlement complete" : "Simulate net settlement"}</button>
+                  <button className="primary full" disabled={settlementComplete} onClick={runSettlement}>{settlementComplete ? "Demo settlement complete" : "Simulate net settlement"}</button>
                 </article>
               </div>
               <article className="panel corridor-positions">
@@ -685,8 +916,9 @@ export default function Home() {
                       <div className={`score-chip ${selectedCase.severity.toLowerCase()}`}><strong>{selectedCase.riskScore}</strong><small>/100</small></div>
                     </div>
                     <div className="case-section"><h3>Explainable triggers</h3>{JSON.parse(selectedCase.reasons).map((reason: string, index: number) => <div className="case-reason" key={reason}><span>{String(index + 1).padStart(2, "0")}</span><p>{reason}</p></div>)}</div>
+                    <div className="case-section"><h3>Detection and evidence provenance</h3><div className="provenance-grid"><div><span>Detection mode</span><strong>{selectedCase.detectionMode}</strong></div><div><span>Rule identifiers</span><strong>{JSON.parse(selectedCase.ruleCodes || "[]").join(", ") || "No coded rule recorded"}</strong></div><div><span>Rule version</span><strong>{selectedCase.ruleVersion}</strong></div><div><span>Illustrative model</span><strong>{selectedCase.modelVersion}</strong></div><div className="wide"><span>Evidence source</span><strong>{selectedCase.evidenceProvenance}</strong></div></div><p className="model-disclaimer">The model score is demonstrative decision support. It does not make a legal conclusion or replace accountable analyst review.</p></div>
                     <div className="case-section timeline"><h3>Case timeline</h3><div><span>✓</span><p><strong>Alert created</strong><small>{new Date(selectedCase.createdAt).toLocaleString("en-GB")}</small></p></div>{selectedCase.status !== "Open" && <div><span>✓</span><p><strong>{selectedCase.status} by analyst</strong><small>{selectedCase.assignedToEmail}</small></p></div>}</div>
-                    {selectedCase.status === "Open" ? <div className="case-decision"><label>Investigation note<textarea value={caseNote} onChange={(event) => setCaseNote(event.target.value)} placeholder="Document evidence reviewed and the reason for your decision…" /></label><div><button className="secondary" onClick={() => decideCase("Escalated")}>Escalate case</button><button className="primary" onClick={() => decideCase("Cleared")}>Clear with note</button></div></div> : <div className="decision-record"><span>✓</span><div><strong>Decision recorded: {selectedCase.status}</strong><p>{selectedCase.note}</p>{selectedCase.status === "Escalated" && <button className="str-action" onClick={() => { setStrSubmitted(false); setShowStr(true); }}>Prepare suspicious transaction report →</button>}</div></div>}
+                    {selectedCase.status === "Open" ? <div className="case-decision"><label>Investigation note<textarea value={caseNote} onChange={(event) => setCaseNote(event.target.value)} placeholder="Document evidence reviewed and the reason for your decision…" /></label><label>Human override reason (required when changing the automated recommendation)<textarea value={caseOverrideReason} onChange={(event) => setCaseOverrideReason(event.target.value)} placeholder="Explain why the analyst decision differs from or confirms the automated outcome…" /></label><div><button className="secondary" onClick={() => decideCase("Escalated")}>Escalate case</button><button className="primary" onClick={() => decideCase("Cleared")}>Clear with note</button></div></div> : <div className="decision-record"><span>✓</span><div><strong>Decision recorded: {selectedCase.status}</strong><p>{selectedCase.note}</p>{selectedCase.overrideReason && <p><strong>Override rationale:</strong> {selectedCase.overrideReason}</p>}{selectedCase.status === "Escalated" && <button className="str-action" onClick={() => { setStrSubmitted(false); setStrNarrative(`${selectedCase.customerName} was escalated following automated detection of ${selectedCase.caseType.toLowerCase()}. The transaction and related customer activity were reviewed against the recorded risk indicators. The reporting entity is preparing this report for supervisory assessment; no conclusion of criminal conduct has been made.`); setShowStr(true); }}>Prepare suspicious transaction report →</button>}</div></div>}
                   </> : <div className="empty">Select a case to begin the review.</div>}
                 </article>
               </div>
@@ -696,7 +928,7 @@ export default function Home() {
               <div className="supervisory-banner"><span className="shield">◇</span><div><strong>Illustrative privacy-preserving supervisory access</strong><p>Demonstration of aggregate corridor and compliance data. No live central-bank connection or statutory feed is active.</p></div><em>Demo regulator view</em></div>
               <div className="regulator-metrics">
                 <article><span>Formalized volume</span><strong>JOD {reportVolume.toLocaleString("en-US")}</strong><small>Previously informal flows now visible</small></article>
-                <article><span>Registered entities</span><strong>{brokers.length}</strong><small>{brokers.filter((broker) => broker.status === "Active").length} active reporting entities</small></article>
+                <article><span>Registered entities</span><strong>{brokerCards.length}</strong><small>{brokerCards.filter((broker) => broker.status === "Active").length} active reporting entities</small></article>
                 <article><span>Monitored corridors</span><strong>{corridorSummary.length}</strong><small>Cross-border routes reporting live</small></article>
                 <article><span>STR pipeline</span><strong>{cases.filter((item) => item.status === "Escalated").length}</strong><small>Regulatory filings received or pending</small></article>
               </div>
@@ -714,13 +946,13 @@ export default function Home() {
                   <div className="panel-heading"><div><h2>Supervisory signals</h2><p>System-level issues requiring attention</p></div></div>
                   <div><span className="signal-icon red">!</span><p><strong>{transactions.filter((item) => item.risk === "High").length} high-risk transfer signals</strong><small>Reporting entities are conducting enhanced review</small></p></div>
                   <div><span className="signal-icon amber">◎</span><p><strong>{cases.filter((item) => item.status === "Open").length} unresolved AML cases</strong><small>Tracked against the supervisory response SLA</small></p></div>
-                  <div><span className="signal-icon green">✓</span><p><strong>{brokers.filter((broker) => broker.status === "Active").length} entities reporting normally</strong><small>No missed reporting windows in the current cycle</small></p></div>
+                  <div><span className="signal-icon green">✓</span><p><strong>{brokerCards.filter((broker) => broker.status === "Active").length} entities reporting normally</strong><small>No missed reporting windows in the current cycle</small></p></div>
                 </article>
               </div>
               <article className="panel entity-register">
                 <div className="panel-heading"><div><h2>Reporting entity register</h2><p>Licensed participants with privacy-safe compliance indicators</p></div><span className="data-protection">No customer PII</span></div>
                 <div className="table-wrap"><table><thead><tr><th>Entity</th><th>Jurisdiction</th><th>Primary corridor</th><th>Liquidity coverage</th><th>Reporting health</th><th>Status</th></tr></thead><tbody>
-                  {brokers.map((broker, index) => <tr key={broker.code}><td><strong>{broker.code}</strong><small>Entity #{String(index + 1).padStart(3, "0")}</small></td><td>{broker.city === "Amman" ? "Jordan" : broker.city === "Cairo" ? "Egypt" : "Pakistan"}</td><td>{broker.corridor}</td><td><strong>{Math.round(broker.balance / Math.max(1, Math.abs(broker.position)) * 100)}%</strong><small>Prefunded obligation cover</small></td><td><span className="report-health">✓ On time</span></td><td><span className={`broker-status ${broker.status.toLowerCase()}`}>{broker.status}</span></td></tr>)}
+                  {brokerCards.map((broker, index) => <tr key={broker.code}><td><strong>{broker.code}</strong><small>Entity #{String(index + 1).padStart(3, "0")}</small></td><td>{broker.city === "Amman" ? "Jordan" : broker.city === "Cairo" ? "Egypt" : "Pakistan"}</td><td>{broker.corridor}</td><td><strong>{Math.round(broker.balance / Math.max(1, Math.abs(broker.position)) * 100)}%</strong><small>Prefunded obligation cover</small></td><td><span className="report-health">✓ On time</span></td><td><span className={`broker-status ${broker.status.toLowerCase()}`}>{broker.status}</span></td></tr>)}
                 </tbody></table></div>
               </article>
               <div className="supervisory-footnote"><span>◇</span><p><strong>Data minimization enforced</strong>Supervisors receive aggregate flows, licensed-entity identifiers, case status, and statutory reports. Personal data requires a lawful case-level request.</p></div>
@@ -1041,7 +1273,7 @@ export default function Home() {
                 <div>✓</div>
                 <h3>Report submitted securely</h3>
                 <p>A simulated regulator connector acknowledged this demonstration filing. Nothing was transmitted externally.</p>
-                <dl><div><dt>Demo receipt</dt><dd>STR-DEMO-2026-00418</dd></div><div><dt>Approved by</dt><dd>{selectedCase.assignedToEmail || "Current compliance officer"}</dd></div><div><dt>Status</dt><dd>Simulated acceptance</dd></div></dl>
+                <dl><div><dt>Demo receipt</dt><dd>{latestCaseFiling?.demoReceipt || "Persisted demo receipt"}</dd></div><div><dt>Approved by</dt><dd>{latestCaseFiling?.approvedByEmail || selectedCase.assignedToEmail || "Current compliance officer"}</dd></div><div><dt>Status</dt><dd>{latestCaseFiling?.status || "Simulated acceptance"}</dd></div></dl>
                 <button className="primary full" onClick={() => setShowStr(false)}>Return to case</button>
               </div>
             ) : (
@@ -1055,11 +1287,33 @@ export default function Home() {
                   <div className="wide"><span>Suspicion category</span><strong>{selectedCase.caseType}</strong></div>
                   <div className="wide"><span>Automated indicators</span><p>{JSON.parse(selectedCase.reasons).join(" · ")}</p></div>
                 </div>
-                <label className="str-narrative">Regulatory narrative<textarea defaultValue={`${selectedCase.customerName} was escalated following automated detection of ${selectedCase.caseType.toLowerCase()}. The transaction and related customer activity were reviewed against the recorded risk indicators. The reporting entity is submitting this report for supervisory assessment; no conclusion of criminal conduct has been made.`} /></label>
+                <label className="str-narrative">Regulatory narrative<textarea value={strNarrative} onChange={(event) => setStrNarrative(event.target.value)} /></label>
                 <div className="str-certification"><span>✓</span><p>I certify that this filing reflects the evidence available in the case record and is submitted in good faith.</p></div>
-                <div className="modal-actions"><button className="secondary" onClick={() => setShowStr(false)}>Save draft</button><button className="primary" onClick={() => setStrSubmitted(true)}>Simulate approved submission</button></div>
+                <div className="modal-actions"><button className="secondary" onClick={() => saveFiling("Draft")}>Save draft</button><button className="primary" onClick={() => saveFiling("Simulated")}>Simulate approved submission</button></div>
               </>
             )}
+          </section>
+        </div>
+      )}
+
+      {showBroker && (
+        <div className="modal-backdrop" onMouseDown={() => setShowBroker(false)}>
+          <section className="modal broker-modal" onMouseDown={(event) => event.stopPropagation()} aria-modal="true" role="dialog" aria-labelledby="broker-onboarding-title">
+            <div className="modal-header">
+              <div><span className="eyebrow">BROKER DUE DILIGENCE</span><h2 id="broker-onboarding-title">Onboard a licensed broker</h2></div>
+              <button onClick={() => setShowBroker(false)} aria-label="Close">×</button>
+            </div>
+            <form onSubmit={submitBroker}>
+              <div className="progress"><span className="complete" /><span className="complete" /><span /></div>
+              <div className="step-labels"><span>Entity</span><span>Ownership</span><span>Approval</span></div>
+              <div className="form-row"><label>Legal entity name<input name="legalName" required placeholder="Registered company name" /></label><label>Trading name<input name="tradingName" required placeholder="Customer-facing name" /></label></div>
+              <div className="form-row"><label>Jurisdiction<select name="jurisdiction" defaultValue="Jordan"><option>Jordan</option><option>Egypt</option><option>Pakistan</option><option>Philippines</option><option>Morocco</option></select></label><label>Operating city<input name="city" required defaultValue="Amman" /></label></div>
+              <label>Money-service license number<input name="licenseNumber" required minLength={4} placeholder="Only the final four characters are retained" /></label>
+              <label>Compliance officer email<input name="complianceOfficerEmail" type="email" required placeholder="compliance@example.com" /></label>
+              <fieldset className="corridor-picker"><legend>Requested operating corridors</legend><label><input type="checkbox" name="corridors" value="Egypt" defaultChecked /> Egypt</label><label><input type="checkbox" name="corridors" value="Pakistan" /> Pakistan</label><label><input type="checkbox" name="corridors" value="Philippines" /> Philippines</label><label><input type="checkbox" name="corridors" value="Morocco" /> Morocco</label></fieldset>
+              <div className="privacy-note"><span>◇</span><div><strong>Approval remains pending</strong><p>Beneficial ownership, license validity, sanctions screening, compliance-officer authority, and prefunding must be independently verified before activation.</p></div></div>
+              <button className="primary full" type="submit">Create pending broker record</button>
+            </form>
           </section>
         </div>
       )}

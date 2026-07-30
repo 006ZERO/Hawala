@@ -1,7 +1,7 @@
 import { desc } from "drizzle-orm";
-import { getChatGPTUser } from "../../chatgpt-auth";
+import { getAuthorizedUser } from "../../authorization";
 import { getDb } from "../../../db";
-import { transfers } from "../../../db/schema";
+import { auditEvents, transfers } from "../../../db/schema";
 
 function initialsFor(name: string) {
   return name
@@ -22,7 +22,7 @@ function routeError(error: unknown) {
 }
 
 async function authenticatedUser() {
-  const user = await getChatGPTUser();
+  const user = await getAuthorizedUser();
   if (!user) {
     return null;
   }
@@ -48,8 +48,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const user = await authenticatedUser();
-    if (!user) return Response.json({ error: "Sign in is required to record a transfer." }, { status: 401 });
+    const user = await getAuthorizedUser(["Administrator", "Operator", "ComplianceOfficer"]);
+    if (!user) return Response.json({ error: "An active operator or compliance role is required to record a transfer." }, { status: 403 });
 
     const payload = (await request.json()) as {
       customerName?: string;
@@ -83,6 +83,16 @@ export async function POST(request: Request) {
         createdByEmail: user.email,
       })
       .returning();
+    await getDb().insert(auditEvents).values({
+      reference: `AUD-${String(Date.now()).slice(-9)}`,
+      eventType: "TRANSFER",
+      entityType: "Transfer",
+      entityReference: reference,
+      action: "Recorded and screened transfer",
+      outcome: status,
+      metadata: JSON.stringify({ destination, amountJod, purpose, risk, screeningMode: "Synthetic demonstration rules" }),
+      actorEmail: user.email,
+    });
 
     return Response.json({ transfer }, { status: 201 });
   } catch (error) {

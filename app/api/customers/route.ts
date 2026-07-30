@@ -1,10 +1,10 @@
 import { desc } from "drizzle-orm";
-import { getChatGPTUser } from "../../chatgpt-auth";
+import { getAuthorizedUser } from "../../authorization";
 import { getDb } from "../../../db";
-import { customers } from "../../../db/schema";
+import { auditEvents, customers } from "../../../db/schema";
 
 async function requireApiUser() {
-  return getChatGPTUser();
+  return getAuthorizedUser();
 }
 
 export async function GET() {
@@ -21,8 +21,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const user = await requireApiUser();
-    if (!user) return Response.json({ error: "Sign in is required to onboard a customer." }, { status: 401 });
+    const user = await getAuthorizedUser(["Administrator", "Operator", "ComplianceOfficer"]);
+    if (!user) return Response.json({ error: "An active operator or compliance role is required to onboard a customer." }, { status: 403 });
 
     const payload = (await request.json()) as {
       fullName?: string;
@@ -49,6 +49,16 @@ export async function POST(request: Request) {
       risk: "Low",
       createdByEmail: user.email,
     }).returning();
+    await getDb().insert(auditEvents).values({
+      reference: `AUD-${String(Date.now()).slice(-9)}`,
+      eventType: "CUSTOMER_ONBOARDING",
+      entityType: "Customer",
+      entityReference: customer.reference,
+      action: "Created minimized KYC record",
+      outcome: customer.verificationStatus,
+      metadata: JSON.stringify({ nationality, idType, retainedIdentityCharacters: 4 }),
+      actorEmail: user.email,
+    });
 
     return Response.json({ customer }, { status: 201 });
   } catch (error) {
