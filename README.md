@@ -1,98 +1,187 @@
-# vinext-starter
+# HAWALA Compliance OS
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+> A bilingual compliance and operations platform for regulated institutions managing broker-led remittance networks.
 
-## Prerequisites
+![HAWALA Compliance OS product preview](public/og.png)
 
-- Node.js `>=22.13.0`
+HAWALA Compliance OS helps licensed remittance providers, exchange companies, banks, and supervised pilot programs create accountable digital records across customer onboarding, broker oversight, transaction monitoring, AML investigations, reconciliation, and regulatory evidence preparation.
 
-## Quick Start
+The current repository contains a private, buyer-ready demonstration using synthetic data. It is designed to show the operating model honestly—not to imply regulatory approval, live screening connectivity, or production funds movement.
+
+## Why it exists
+
+Broker-led remittance networks remain useful because they are fast, accessible, and relationship-driven. Their operational records, however, may be fragmented across paper, messaging applications, and spreadsheets. That makes compliance review, reconciliation, audit, and supervisory visibility difficult.
+
+HAWALA Compliance OS demonstrates how a regulated institution could formalize those workflows while preserving accountable human decisions and the institution's existing legal responsibilities.
+
+## Product capabilities
+
+- Customer onboarding with minimized identity-document storage
+- Broker due diligence, licensing metadata, beneficial-owner review, and corridor assignment
+- Transfer recording with explainable risk indicators
+- AML case management with evidence provenance, rule/model versions, analyst notes, and human overrides
+- Human-approved suspicious-transaction-report preparation
+- Broker prefunding, net-position calculation, reconciliation, settlement, and dispute records
+- Privacy-aware supervisory and regulatory dashboards
+- Administrator, Compliance Officer, Operator, and Auditor roles
+- Attributed, durable operational and compliance audit events
+- English and Arabic interfaces with right-to-left support
+- Guided buyer demonstration and Jordan-first pilot command center
+
+## Demonstration boundaries
+
+| Capability | Demonstrated | External requirement for production |
+|---|---|---|
+| Sanctions and PEP screening | Synthetic fixture and provider-neutral adapter contract | Licensed data provider, credentials, SLA, and validation |
+| Identity and KYB | Workflow and evidence states | Approved verification provider and lawful data schedule |
+| Regulatory filing | Human-approved draft and simulated receipt | Authority-approved schema, channel, credentials, and process |
+| Funds movement | Prefunding, exposure, reconciliation, and settlement records | Licensed sponsor, safeguarded accounts, and approved payment rail |
+| Distributed ledger | Optional architectural proof | Multi-party governance case; not required for settlement |
+| Security assurance | Application controls and readiness documentation | Buyer IAM, infrastructure evidence, and independent penetration test |
+
+No live sanctions provider, identity vendor, payment rail, central-bank connection, or statutory-reporting channel is claimed by this project.
+
+## Architecture
+
+```text
+English / Arabic web application
+              |
+      Server-authorized APIs
+              |
+  +-----------+------------+----------------+
+  |           |            |                |
+Customers  Transfers   Compliance       Broker operations
+                          cases          and settlement
+  |           |            |                |
+  +-----------+------------+----------------+
+              |
+      Cloudflare D1 / Drizzle
+              |
+   Attributed audit-event stream
+              |
+  Provider-neutral external adapters
+  (all simulated or disconnected here)
+```
+
+The operational database is the system of record. A distributed ledger is optional and is not treated as a substitute for safeguarding, payment execution, reconciliation, or regulatory permission.
+
+## Technology
+
+- React 19
+- TypeScript
+- Vinext / Vite
+- Next-compatible application routing
+- Cloudflare Workers and D1
+- Drizzle ORM and migrations
+- Workspace-provided identity with server-side role authorization
+
+## Repository structure
+
+```text
+app/                  Product UI, authorization, and API routes
+db/                   Drizzle schema and database access
+drizzle/              Versioned D1 migrations
+commercial/           Buyer, sponsor, regulatory, security, and vendor packs
+pilot/                KPI, weekly reporting, issue, and go/no-go templates
+public/               Product assets
+tests/                Rendered-output checks
+.openai/hosting.json  Logical Sites hosting bindings
+```
+
+## Run locally
+
+### Requirements
+
+- Node.js 22.13 or newer
+- pnpm or npm
+- Linux, macOS, or Fedora/Ubuntu under WSL recommended
+
+### Installation
 
 ```bash
-npm install
-npm run dev
-npm run build
+git clone https://github.com/006ZERO/Hawala.git
+cd Hawala
+pnpm install
+pnpm dev
 ```
 
-This starter does not use `wrangler.jsonc`.
+Build the production bundle:
 
-## Included Shape
-
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```bash
+pnpm build
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+Generate a migration after changing `db/schema.ts`:
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+```bash
+pnpm db:generate
+```
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+## Application roles
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+| Role | Principal responsibilities |
+|---|---|
+| Administrator | Configuration, access provisioning, broker onboarding, filing, and settlement authority |
+| Compliance Officer | Due diligence, case decisions, overrides, and filing preparation |
+| Operator | Transfer operations, approved settlement actions, and operational exceptions |
+| Auditor | Read-only access to records, decisions, and attributed evidence |
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+The first authenticated owner is bootstrapped as Administrator only while the hosted demonstration remains owner-only. Production deployments require buyer-managed identity, MFA, provisioning, deprovisioning, and periodic access reviews.
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+## API surfaces
 
-## Useful Commands
+- `GET/POST /api/customers`
+- `GET/POST /api/transfers`
+- `GET/PATCH /api/cases`
+- `GET/POST /api/operations`
+- `GET /api/integrations/status`
+- `POST /api/integrations/screening`
 
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+The screening endpoint is deliberately synthetic. Its response identifies the simulation environment, confirms that nothing was transmitted externally, and includes limitations suitable for audit evidence.
 
-## Learn More
+## Jordan pilot materials
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+The repository includes working materials for a controlled sponsor-led pilot:
+
+- Sponsor qualification and responsibility matrix
+- Counsel briefing questions
+- Draft JoRegBox application content
+- Screening, identity, safeguarding, and penetration-test procurement requirements
+- Security operations baseline
+- KPI scorecard and weekly report
+- Issue register and final go/no-go report
+
+Start with [`commercial/SPONSOR_AND_REGULATORY_DOSSIER.md`](commercial/SPONSOR_AND_REGULATORY_DOSSIER.md) and [`commercial/Jordan_Pilot_Readiness_Pack.md`](commercial/Jordan_Pilot_Readiness_Pack.md).
+
+## Private demonstration
+
+The deployed demonstration is access-controlled:
+
+[Open the private HAWALA Compliance OS demo](https://hawala-compliance-os.ruction-plating-0mqn.chatgpt.site/)
+
+Access to the URL does not grant access to the application. Prospective participants should receive named, time-bounded access through the approved demonstration process.
+
+## Status
+
+This project is a buyer-ready demonstration and pilot-planning asset—not a production remittance service.
+
+Before controlled live use, the project requires at minimum:
+
+- A licensed and accountable sponsor
+- Qualified Jordanian legal review
+- The applicable Central Bank of Jordan pathway
+- Contracted screening and identity providers
+- Approved safeguarding and payment arrangements
+- Buyer-controlled IAM, security infrastructure, and data governance
+- Independent penetration testing
+- An authorized shadow pilot with measurable results
+
+## Legal and compliance notice
+
+This repository does not provide legal advice and does not represent approval, endorsement, licensing, certification, or authorization by the Central Bank of Jordan or any other authority. All names, transactions, alerts, brokers, balances, receipts, matches, and performance values in the demonstration are synthetic or illustrative unless governed by a separately approved pilot data schedule.
+
+Do not use the demonstration for real customer decisions, sanctions screening, regulatory filing, funds movement, or production compliance conclusions.
+
+## Confidentiality and licensing
+
+The repository is currently private. No open-source license is granted by default. All rights are reserved unless the owner provides a separate written license or commercial agreement.
