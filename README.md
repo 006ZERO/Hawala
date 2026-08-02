@@ -85,7 +85,7 @@ commercial/           Buyer, sponsor, regulatory, security, and vendor packs
 pilot/                KPI, weekly reporting, issue, and go/no-go templates
 public/               Product assets
 tests/                Rendered-output checks
-.openai/hosting.json  Logical Sites hosting bindings
+.openai/              Local Sites metadata (ignored by Git)
 ```
 
 ## Run locally
@@ -116,6 +116,8 @@ Generate a migration after changing `db/schema.ts`:
 ```bash
 pnpm db:generate
 ```
+
+Local Sites deployments may create `.openai/hosting.json`. That directory is intentionally ignored because it contains workspace-specific hosting metadata. The local build falls back to the portable `DB` binding when the file is absent.
 
 ## Application roles
 

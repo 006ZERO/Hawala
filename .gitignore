@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+/node_modules/
 /.pnpm-store/
 /.pnp
 .pnp.*
@@ -21,7 +21,27 @@
 
 # misc
 .DS_Store
+Thumbs.db
+Desktop.ini
 *.pem
+*.key
+*.crt
+*.pfx
+*.p12
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# editor and local tooling
+/.vscode/
+/.idea/
+/.codex/
+/.agents/
+/.openai/
+*.code-workspace
 
 # debug
 npm-debug.log*
@@ -29,15 +49,25 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# environment and local secrets
 .env*
+!.env.example
+.dev.vars
+.dev.vars.*
+*.local
 
 # vercel
 .vercel
 
 # typescript
 next-env.d.ts
+*.tsbuildinfo
+
+# generated builds and local runtime state
 /dist/
 /.wrangler/
 /outputs/
 /work/
+/commercial/rendered/
+*.pid
+*.seed
