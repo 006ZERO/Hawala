@@ -755,3 +755,114 @@ td small { display: block; color: #98a19e; font-size: 8px; margin-top: 3px; }
   .modal-header, .modal form, .reasons { padding-left: 18px; padding-right: 18px; }
   .modal-actions { padding-left: 18px; padding-right: 18px; }
 }
+
+/* Festival-ready visual system ------------------------------------------------
+   The product is intentionally dense, but the previous system made every label
+   compete at the same visual volume. These tokens restore hierarchy and give
+   the operator a calm, confident surface to work from. */
+:root {
+  --ink: #102a28;
+  --muted: #647874;
+  --green: #087f73;
+  --green-dark: #05645b;
+  --mint: #e1f4ef;
+  --line: #dbe7e3;
+  --canvas: #f3f7f6;
+  --panel: #ffffff;
+  --coral: #e36b55;
+  --navy: #102f36;
+  --shadow: 0 16px 42px rgba(16, 47, 54, .07);
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  letter-spacing: -.01em;
+}
+
+.app-shell { background: var(--canvas); }
+.sidebar {
+  width: 264px;
+  padding: 28px 18px 22px;
+  background: var(--navy);
+  border: 0;
+  color: #f4fbf8;
+}
+.brand { padding: 0 12px 36px; gap: 12px; }
+.brand-mark { width: 38px; height: 38px; border-radius: 12px; background: #24a996; box-shadow: 0 8px 20px rgba(36,169,150,.22); }
+.brand strong { font-size: 17px; letter-spacing: 3px; }
+.brand small { color: #9abbb5; font-size: 9px; letter-spacing: 1.8px; }
+.sidebar nav { gap: 6px; }
+.nav-item { color: #b8ccc7; border-radius: 11px; padding: 12px 14px; font-size: 14px; }
+.nav-item:hover { background: rgba(255,255,255,.08); color: white; }
+.nav-item.active { background: #d9f3eb; color: var(--green-dark); box-shadow: 0 6px 16px rgba(0,0,0,.08); }
+.nav-icon { font-size: 18px; }
+.sidebar-bottom { gap: 10px; }
+.license-card { border-color: rgba(185,232,220,.2); background: rgba(255,255,255,.07); padding: 13px; }
+.license-card strong, .user-card strong { color: white; font-size: 12px; }
+.license-card small, .user-card small { color: #9abbb5; font-size: 10px; }
+.settings { border-color: rgba(255,255,255,.13); color: #b8ccc7; }
+.user-card { padding-top: 16px; }
+.avatar.dark { background: #e5f4ef; color: var(--green-dark); }
+
+.workspace { margin-left: 264px; width: calc(100% - 264px); }
+.topbar { height: 78px; padding: 0 48px; background: rgba(255,255,255,.92); backdrop-filter: blur(16px); }
+.search { width: min(440px, 44vw); }
+.search input { font-size: 14px; }
+.demo-launch { border-color: #cbe7df; background: #ecf8f4; font-size: 11px; padding: 10px 13px; }
+.language, .notification { font-size: 13px; }
+.notification { font-size: 24px; }
+.content { max-width: 1520px; padding: 44px 48px 70px; }
+.welcome { margin-bottom: 30px; }
+.eyebrow { color: var(--green); font-size: 11px; letter-spacing: 1.8px; }
+.welcome h1 { font-size: clamp(32px, 3vw, 46px); letter-spacing: -1.2px; }
+.welcome p:last-child { font-size: 15px; color: #6c807b; }
+.primary { border-radius: 11px; padding: 13px 19px; background: var(--coral); box-shadow: 0 8px 18px rgba(227,107,85,.22); font-size: 13px; }
+.primary:hover { background: #c95845; }
+.environment-banner { margin: -10px 0 22px; padding: 10px 13px; border-color: #f1d9ba; background: #fff9f1; border-radius: 10px; }
+.environment-banner > span { font-size: 9px; }
+.environment-banner p, .environment-banner button { font-size: 10px; }
+.metrics { gap: 16px; margin-bottom: 16px; }
+.metrics article { min-height: 126px; padding: 20px; border-radius: 16px; border-color: var(--line); box-shadow: var(--shadow); }
+.metric-icon { width: 38px; height: 38px; border-radius: 11px; font-size: 16px; }
+.metrics article span { font-size: 12px; }
+.metrics article strong { font-size: 27px; }
+.metrics article small { font-size: 10px; }
+.main-grid { gap: 16px; margin-bottom: 16px; }
+.panel { border-radius: 16px; border-color: var(--line); box-shadow: var(--shadow); }
+.panel-heading { padding: 22px 23px 14px; }
+.panel-heading h2 { font-size: 16px; }
+.panel-heading p { font-size: 11px; }
+.panel-heading button { font-size: 11px; }
+.chart { height: 220px; padding: 6px 23px 20px; }
+.table-wrap th { font-size: 10px; }
+.table-wrap td { font-size: 12px; }
+.table-wrap th, .table-wrap td { padding: 13px 16px; }
+.status, .risk { font-size: 10px; }
+.alert-item { padding: 15px 17px; }
+.alert-item strong { font-size: 12px; }
+.alert-item p, .alert-item small { font-size: 10px; }
+.section-title { font-size: 16px; }
+.modal { border-radius: 18px; }
+.modal-header h2 { font-size: 26px; }
+.modal label { font-size: 12px; }
+.modal input, .modal select, .modal textarea { font-size: 13px; padding: 12px 13px; }
+
+.app-shell[dir="rtl"] .workspace { margin-left: 0; margin-right: 264px; }
+
+@media (max-width: 1050px) {
+  .sidebar { width: 230px; }
+  .workspace { margin-left: 230px; width: calc(100% - 230px); }
+  .app-shell[dir="rtl"] .workspace { margin-right: 230px; }
+  .content { padding-left: 30px; padding-right: 30px; }
+}
+@media (max-width: 760px) {
+  .sidebar { display: none; }
+  .workspace, .app-shell[dir="rtl"] .workspace { width: 100%; margin: 0; }
+  .topbar { height: 68px; padding: 0 18px; }
+  .content { padding: 28px 18px 100px; }
+  .welcome h1 { font-size: 32px; }
+  .metrics article { min-height: 108px; padding: 16px; }
+}
