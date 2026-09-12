@@ -1,0 +1,51 @@
+.product-shell{background:#fafafa;color:#242424;font-family:Arial,"Segoe UI",sans-serif}
+.product-shell *{box-shadow:none!important;animation:none!important;letter-spacing:normal}
+.product-sidebar{background:#f2f2f2;color:#333;border-inline-end:1px solid #ddd}
+.product-brand strong,.profile strong,.pilot-status strong{color:#222}
+.product-brand span,.workspace-label,.profile small,.pilot-status small{color:#666}
+.product-nav button,.sidebar-settings{color:#555;border-radius:3px;font-weight:400}
+.product-nav button.active{background:#e1e1e1;color:#111;font-weight:700}
+.product-nav button:hover,.sidebar-settings:hover{background:#e7e7e7;color:#111}
+.product-nav b,.count-badge{background:#e5e5e5;color:#333;border-radius:3px}
+.pilot-status{background:transparent;border:0;border-top:1px solid #ccc;border-radius:0;padding:18px 10px}
+.status-line,.breadcrumb span{color:#444}
+.progress-track,.coverage-bar{background:#ddd}
+.progress-track span,.coverage-bar span{background:#777}
+.profile,.sidebar-settings{border-color:#d6d6d6}
+.profile-avatar,.header-avatar,.person-avatar,.metric-icon,.metric-ring,.mini-bars,.metric-spark,.health-pill,.coverage-legend i,.status-chip i{display:none}
+.product-header{border-color:#ddd;background:white}
+.global-search,.lang-button{border-color:#d8d8d8;background:white;border-radius:3px;color:#333}
+.demo-strip{background:#f1f1f1;border:0;border-radius:0;color:#666;font-size:12px;height:auto;min-height:34px}
+.demo-strip button,.text-button,.row-action,.attention-item button{color:#333;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+.page-intro h1{font-size:30px;font-weight:600;letter-spacing:-.6px}
+.page-intro p:last-child,.overline{color:#666}
+.primary-action{background:#292929;color:white;border-radius:4px;font-size:14px;font-weight:500}
+.primary-action:hover{background:#444}
+.metric-grid{gap:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin-bottom:28px}
+.metric-card,.metric-card.featured{background:transparent;color:#222;border:0;border-inline-end:1px solid #ddd;border-radius:0;min-height:145px}
+.metric-card:last-child{border-inline-end:0}
+.metric-top,.featured .metric-top{color:#555;font-size:14px;font-weight:400}
+.metric-card>strong{font-size:28px;font-weight:500;font-variant-numeric:tabular-nums}
+.metric-foot{flex-wrap:wrap;font-size:12px}
+.metric-foot small,.featured .metric-foot small,.trend-up,.trend-warn,.featured .trend-up{color:#666;font-weight:400}
+.surface{border:1px solid #ddd;border-radius:4px;background:white}
+.surface-heading h2{font-size:17px;font-weight:600}
+.surface-heading p{font-size:12px;color:#666}
+.product-shell th{background:#f5f5f5;color:#555;font-size:12px;text-transform:none;font-weight:500}
+.product-shell td{font-size:13px;color:#444;border-color:#e5e5e5;padding:18px 14px}
+.product-shell td strong{color:#222;font-weight:500}
+.person-cell small{font-size:12px;color:#777}
+.status-chip,.status-chip.cleared,.status-chip.review{background:transparent;color:#444;border:1px solid #ccc;border-radius:3px;font-size:12px;font-weight:400}
+.status-chip.review{border-color:#999}
+.attention-item{padding:18px 20px;border-color:#e5e5e5}
+.attention-item strong{font-size:14px;font-weight:500}
+.attention-item small{font-size:12px;color:#777}
+.attention-footer{background:#f7f7f7;color:#666;font-size:12px}
+.coverage-value{color:#333;font-weight:500}.coverage-legend{font-size:12px;color:#555}
+.transfer-modal{border-radius:5px}.modal-layer{background:#0009}
+.modal-top button{width:auto;height:auto;padding:8px;border-radius:3px;font-size:13px}
+.modal-form label{font-size:14px}.modal-form input,.modal-form select{font-size:14px;border-radius:3px;border-color:#ccc}
+.screening-callout{background:#f4f4f4;border-color:#ddd;border-radius:3px}
+.screening-callout strong{font-size:14px}.screening-callout small{font-size:12px;color:#666}
+@media(max-width:1050px){.metric-card:nth-child(2){border-inline-end:0}.metric-card:nth-child(-n+2){border-bottom:1px solid #ddd}}
+@media(max-width:700px){.metric-card{border-inline-end:0;border-bottom:1px solid #ddd}.metric-card:last-child{border-bottom:0}.header-actions{gap:8px}.global-search{width:140px}}
