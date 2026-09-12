@@ -722,6 +722,40 @@ td small { display: block; color: #98a19e; font-size: 8px; margin-top: 3px; }
   .sparkline { display: none; }
 }
 
+/* Premium product polish */
+.content > * { animation: rise-in .35s ease both; }
+@keyframes rise-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.sidebar::after { content: "JORDAN / MENA OPERATIONS"; margin: auto 12px 4px; color: #71938c; font-size: 9px; letter-spacing: 1.4px; }
+.brand-mark span { border-width: 2px; }
+.search { padding: 10px 13px; border: 1px solid #e3ece9; border-radius: 11px; background: #f8fbfa; }
+.search input { background: transparent; }
+.top-actions { gap: 12px; }
+.language { border: 1px solid #e0eae7; border-radius: 9px; padding: 9px 10px; background: white; }
+.notification { width: 38px; height: 38px; border: 1px solid #e0eae7; border-radius: 10px; background: white; }
+.environment-banner { box-shadow: 0 5px 14px rgba(177, 119, 40, .06); }
+.panel-heading h2, .section-title { letter-spacing: -.02em; }
+.table-wrap { overflow: hidden; border-radius: 14px; }
+.table-wrap table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.table-wrap th { background: #f7faf9; color: #758782; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.table-wrap tr:hover td { background: #fbfdfc; }
+.table-action { color: var(--green); font-weight: 800; }
+.alert-item { border-radius: 12px; margin: 8px 12px; border-top: 0; background: #fbfdfc; }
+.alert-item:hover { background: #f0f8f5; }
+.status.cleared, .risk.low { background: #e2f5ed; color: #087f73; }
+.status.review, .risk.medium { background: #fff1dc; color: #a86b1e; }
+.risk.high { background: #fbe6e4; color: #b54843; }
+.ledger-filters { background: #f7faf9; border: 1px solid var(--line); border-radius: 12px; padding: 8px; }
+.ledger-filters button { border-radius: 8px; padding: 8px 11px; }
+.ledger-filters button.active { background: var(--navy); color: white; }
+.scorecard-table, .broker-row, .customer-row { border-color: var(--line); }
+.scorecard-table strong, .broker-row strong, .customer-row strong { font-size: 13px; }
+.settings-card, .pilot-scorecard, .broker-card, .customer-card { box-shadow: var(--shadow); }
+.modal-backdrop { background: rgba(16,47,54,.68); }
+
+@media (prefers-reduced-motion: reduce) {
+  .content > * { animation: none; }
+}
+
 @media (max-width: 480px) {
   .top-actions { gap: 7px; }
   .notification-center { position: fixed; top: 56px; right: 8px; left: 8px; width: auto; }
