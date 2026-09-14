@@ -732,6 +732,7 @@ export default function Home() {
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [roleRecords, setRoleRecords] = useState<AppUserRole[]>([]);
   const [viewerRole, setViewerRole] = useState("Initializing role");
+  const [viewer, setViewer] = useState<{ displayName?: string; email?: string }>({});
   const [roleEmail, setRoleEmail] = useState("");
   const [roleSelection, setRoleSelection] = useState<AppUserRole["role"]>("Auditor");
 
@@ -845,7 +846,7 @@ export default function Home() {
           settings?: Array<{ key: string; value: string }>;
           auditEvents?: AuditEvent[];
           userRoles?: AppUserRole[];
-          viewer?: { role?: string };
+          viewer?: { role?: string; displayName?: string; email?: string };
         };
         if (!response.ok) return;
         setOperationalBrokers(payload.brokers || []);
@@ -854,6 +855,7 @@ export default function Home() {
         setAuditEvents(payload.auditEvents || []);
         setRoleRecords(payload.userRoles || []);
         if (payload.viewer?.role) setViewerRole(payload.viewer.role);
+        if (payload.viewer) setViewer(payload.viewer);
         const screeningSetting = payload.settings?.find((item) => item.key === "screening_rules");
         if (screeningSetting) {
           const parsed = JSON.parse(screeningSetting.value) as typeof screeningRules;
@@ -1142,14 +1144,17 @@ export default function Home() {
           <button className={active === "Settings" ? "nav-item settings active" : "nav-item settings"} onClick={() => setActive("Settings")}>
              {ui.settings}
           </button>
-          <div className="user-card">
-            <div className="avatar dark">YK</div>
-            <div>
-              <strong>Yousef Khoury</strong>
-              <small>{ui.officer}</small>
-            </div>
-            <span>⌄</span>
-          </div>
+          <details className="account-menu">
+            <summary><span className="account-monogram">{viewer.displayName?.trim().slice(0, 2).toUpperCase() || "HW"}</span><span><strong>{viewer.displayName || (language === "AR" ? "حساب مساحة العمل" : "Workspace account")}</strong><small>{language === "AR" ? "إدارة الحساب" : "Manage account"}</small></span></summary>
+            <section className="account-panel" aria-label={language === "AR" ? "تفاصيل الحساب" : "Account details"}>
+              <h2>{language === "AR" ? "حسابك" : "Your account"}</h2>
+              <p>{viewer.email || (language === "AR" ? "تفاصيل الحساب غير متاحة" : "Account details unavailable")}</p>
+              <dl><dt>{language === "AR" ? "الصلاحية" : "Access role"}</dt><dd>{viewerRole === "Initializing role" ? (language === "AR" ? "غير متاحة" : "Unavailable") : viewerRole.replace(/([a-z])([A-Z])/g, "$1 $2")}</dd></dl>
+              <label>{language === "AR" ? "لغة العرض" : "Display language"}<select value={language} onChange={(event) => setLanguage(event.target.value as Language)}><option value="EN">English</option><option value="AR">العربية</option></select></label>
+              <button onClick={(event) => { setActive("Settings"); event.currentTarget.closest("details")?.removeAttribute("open"); }}>{language === "AR" ? "إعدادات مساحة العمل" : "Workspace settings"}</button>
+              <a href={viewer.email ? "/signout-with-chatgpt?return_to=%2F" : "/signin-with-chatgpt?return_to=%2F"}>{viewer.email ? (language === "AR" ? "تسجيل الخروج" : "Sign out") : (language === "AR" ? "تسجيل الدخول" : "Sign in")}</a>
+            </section>
+          </details>
         </div>
       </aside>
 
